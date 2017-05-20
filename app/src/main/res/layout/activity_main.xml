@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.msiworldwide.environmentalsensor.MainActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        app:theme="@style/ThemeOverlay.AppCompat.Dark"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/Field_Select"
+        android:layout_width="150dp"
+        android:layout_height="54dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@android:color/holo_green_dark"
+        android:spinnerMode="dropdown"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="53dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/drop"
+        app:layout_constraintRight_toRightOf="@+id/Field_Select"
+        app:layout_constraintBottom_toBottomOf="@+id/Field_Select"
+        app:layout_constraintTop_toTopOf="@+id/Field_Select"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Spinner
+        android:id="@+id/Water_Source_Select"
+        android:layout_width="150dp"
+        android:layout_height="54dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="50dp"
+        android:background="@android:color/holo_blue_dark"
+        android:spinnerMode="dropdown"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Field_Select"
+        android:layout_marginEnd="16dp" />
+
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="53dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/drop"
+        app:layout_constraintRight_toRightOf="@+id/Water_Source_Select"
+        app:layout_constraintBottom_toBottomOf="@+id/Water_Source_Select"
+        app:layout_constraintTop_toTopOf="@+id/Water_Source_Select"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Spinner
+        android:id="@+id/Crop_Select"
+        android:layout_width="150dp"
+        android:layout_height="54dp"
+        android:layout_marginRight="16dp"
+        android:background="#A2CC8E"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@+id/Water_Source_Select"
+        android:layout_marginEnd="16dp" />
+
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="53dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/drop"
+        app:layout_constraintRight_toRightOf="@+id/Crop_Select"
+        app:layout_constraintBottom_toBottomOf="@+id/Crop_Select"
+        app:layout_constraintTop_toTopOf="@+id/Crop_Select"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Spinner
+        android:id="@+id/Device_Select"
+        android:layout_width="150dp"
+        android:layout_height="54dp"
+        android:layout_marginRight="16dp"
+        android:background="#5B9BD5"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="50dp"
+        app:layout_constraintTop_toBottomOf="@+id/Crop_Select" />
+
+    <ImageView
+        android:layout_width="44dp"
+        android:layout_height="53dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/drop"
+        app:layout_constraintRight_toRightOf="@+id/Device_Select"
+        app:layout_constraintBottom_toBottomOf="@+id/Device_Select"
+        app:layout_constraintTop_toTopOf="@+id/Device_Select"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/Measure_button"
+        android:layout_width="247dp"
+        android:layout_height="66dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="13dp"
+        android:drawableRight="@mipmap/meter"
+        android:gravity="left|center_vertical"
+        android:onClick="openMeasurementLocations"
+        android:text="  Measure"
+        android:textSize="24sp"
+        app:layout_constraintHorizontal_bias="0.504"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Device_Select"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="8dp" />
+
+    <ImageView
+        android:layout_width="122dp"
+        android:layout_height="74dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/connect"
+        android:layout_marginLeft="40dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:id="@+id/connect_image"
+        android:layout_marginTop="28dp"
+        app:layout_constraintTop_toBottomOf="@+id/crop_image" />
+
+    <ImageView
+        android:layout_width="122dp"
+        android:layout_height="74dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/croppic"
+        android:layout_marginLeft="40dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:id="@+id/crop_image"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@+id/canal_image" />
+
+    <ImageView
+        android:layout_width="122dp"
+        android:layout_height="74dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/water"
+        android:layout_marginLeft="40dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:id="@+id/canal_image"
+        android:layout_marginTop="30dp"
+        app:layout_constraintTop_toBottomOf="@+id/field_image" />
+
+    <ImageView
+        android:layout_width="122dp"
+        android:layout_height="74dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+        android:src="@mipmap/field_image"
+        android:layout_marginLeft="40dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:id="@+id/field_image"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="1.0" />
+
+</android.support.constraint.ConstraintLayout>

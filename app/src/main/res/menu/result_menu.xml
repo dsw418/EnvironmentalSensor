@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/moisture_id"
+        android:title="@string/menu_moisture"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/nutrition_id"
+        android:title="@string/menu_nutrition"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/temperature_id"
+        android:title="@string/menu_temperature"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/humidity_id"
+        android:title="@string/menu_humidity"
+        app:showAsAction="never"
+        />
+    <item
+        android:id="@+id/sunlight_id"
+        android:title="@string/menu_sunlight"
+        app:showAsAction="never"
+        />
+
+</menu>

@@ -1,0 +1,84 @@
+<resources>
+    <string name="app_name">Environmental Sensor</string>
+    <string name="menu_moisture">Soil Moisture</string>
+    <string name="menu_nutrition">Soil Nutrition</string>
+    <string name="menu_temperature">Temperature</string>
+    <string name="menu_humidity">Humidity</string>
+    <string name="menu_sunlight">Sunlight</string>
+
+    <!-- Location -->
+    <string name="dialog_error_nolocationservices_requiredforscan_marshmallow">Android 6 requires that Location Services are enabled to scan bluetooth peripherals.\nPlease, go to settings and enable it to start scanning peripherals</string>
+
+    <!-- Scan Activity -->
+    <string name="scan_scanbutton_scan">Scan for peripherals</string>
+    <string name="scan_scanbutton_scanning">Scanning…</string>
+    <string name="scan_devicesheadertitle">PERIPHERALS</string>
+    <string name="scan_nodevicesfound">No peripherals found</string>
+    <string name="scan_device_localname">Local Name</string>
+    <string name="scan_device_address">Address</string>
+    <string name="scan_device_rssi_notavailable">N/A</string>
+    <string name="scan_device_connect">Connect</string>
+    <string name="scan_device_uuid">UUID</string>
+    <string name="scan_device_services">Service UUIDs</string>
+    <string name="scan_device_txpower">TX Power Level</string>
+    <string name="scan_device_viewadvraw">View raw data</string>
+
+    <string name="scan_device_advertising_title">Advertising Raw Data</string>
+
+
+    <string name="scan_device_beacon_manufacturer">Manufacturer</string>
+    <string name="scan_device_beacon_major">Major</string>
+    <string name="scan_device_beacon_minor">Minor</string>
+    <string name="scan_device_uribeacon_uri">Uri</string>
+    <string name="scan_connecting">Connecting…</string>
+    <string name="scan_gettingupdateinfo">Waiting for device info…</string>
+    <string name="scan_connectto_dialog_title_format">Choose mode to connect to %s</string>
+    <string name="scan_unexpecteddisconnect">Peripheral disconnected</string>
+    <string name="scan_tag_id">Id</string>
+    <string name="scan_connectservice_info">Info</string>
+    <string name="scan_connectservice_uart">UART</string>
+    <string name="scan_connectservice_pinio">Pin I/O</string>
+    <string name="scan_connectservice_controller">Controller</string>
+    <string name="scan_connectservice_beacon">Beacon</string>
+    <string name="scan_connectservice_neopixel">Neopixel</string>
+    <string name="scan_softwareupdate_title">Update available</string>
+    <string name="scan_softwareupdate_messageformat">Software version %s is available</string>
+    <string name="scan_bootloaderandfirmwareupdate_messageformat">Software version %1$s and Bootloader version %2$s are available. This is a two-step process: bootloader will be updated first and firmware the next time you connect to the device</string>
+
+    <string name="scan_softwareupdate_install">Install</string>
+    <string name="scan_softwareupdate_notnow">Ask later</string>
+    <string name="scan_softwareupdate_dontask">Ignore</string>
+    <string name="scan_softwareupdate_downloaderror">Software download error</string>
+    <string name="scan_softwareupdate_updateerror">Software update error</string>
+    <string name="scan_softwareupdate_completed">Software updated successfully</string>
+
+
+    <string name="scan_failedupdatedetected_title">Failed update detected</string>
+    <string name="scan_failedupdatedetected_message">A failed update for this device has been detected.\nIt is strongly recommended to retry updating the device now</string>
+    <string name="scan_failedupdatedetected_ok">Update now</string>
+
+
+    <string name="scan_secondphaseupdatedetected_title">Continue update</string>
+    <string name="scan_secondphaseupdatedetected_message">Firmware will be updated now</string>
+    <string name="scan_secondphaseupdatedetected_ok">Continue</string>
+
+
+    <string name="scan_filters_title_filter_format">Filter: %s</string>
+    <string name="scan_filters_title_nofilter">No filter selected</string>
+    <string name="scan_filters_name_rssi_format">Rssi >= %d</string>
+    <string name="scan_filters_name_named">with name</string>
+    <string name="scan_filters_name_uart">with UART</string>
+    <string name="scan_filters_name_title">Name:</string>
+    <string name="scan_filters_name_tip">Find by name</string>
+    <string name="scan_filters_name_settings_contains">Name contains</string>
+    <string name="scan_filters_name_settings_exact">Name equals</string>
+    <string name="scan_filters_name_settings_casesensitive">Matching case</string>
+    <string name="scan_filters_name_settings_caseinsensitive">Ignoring case</string>
+
+    <string name="scan_filters_rssi_title">RSSI >=</string>
+    <string name="scan_filters_rssi_value_format">%d dBM</string>
+    <string name="scan_filters_unnamed">Show unnamed devices</string>
+    <string name="scan_filters_onlyuart">Must have UART service</string>
+    <string name="title_activity_measurement">Measurement</string>
+
+</resources>
