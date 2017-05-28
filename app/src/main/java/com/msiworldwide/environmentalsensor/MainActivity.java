@@ -66,6 +66,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
+import com.msiworldwide.environmentalsensor.Data.FieldData;
+import com.msiworldwide.environmentalsensor.Data.WaterSourceData;
 import com.msiworldwide.environmentalsensor.ble.BleManager;
 import com.msiworldwide.environmentalsensor.ble.BleDevicesScanner;
 import com.msiworldwide.environmentalsensor.ble.BleUtils;
@@ -96,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final int kActivityRequestCode_EnableBluetooth = 1;
     private static final int kActivityRequestCode_Settings = 2;
     private static final int kActivityRequestCode_ConnectedActivity = 3;
+    private static final int NewFieldRequestCode = 4;
+    private static final int NewWaterSourceRequestCode = 5;
 
     // Data
     private BleManager mBleManager;
@@ -121,6 +126,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Spinner devices_spinner;
     private ArrayList<String> devString = new ArrayList<>(Arrays.asList("Select Device","Refresh"));
 
+    DatabaseHelper db;
+
+    List<FieldData> Fields;
+    List<WaterSourceData> Water;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,6 +144,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
         mPeripheralList = new PeripheralList();
+
+        db = new DatabaseHelper(getApplicationContext());
 
         // Setup when activity is created for the first time
         if (savedInstanceState == null) {
@@ -167,6 +178,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Spinner Drop Down for Field Selection
         field_spinner = (Spinner)findViewById(R.id.Field_Select);
+
+        Fields = db.getAllFieldData();
+        for (int i = 0; i < Fields.size(); i++) {
+            FieldData field = Fields.get(i);
+            fieldString.add(field.getFieldId());
+        }
         ArrayAdapter<String> fieldAdapter = new ArrayAdapter<>(MainActivity.this,
                 android.R.layout.simple_spinner_item,fieldString);
 
@@ -216,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (position == 0) {
                 } else if (position == 1) {
                     Intent intent = new Intent(this, NewFieldBoundary.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, NewFieldRequestCode);
                 } else {
 
                 }
@@ -226,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
                 } else if (position == 1) {
                     Intent intent = new Intent(this, NewWaterSource.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, NewWaterSourceRequestCode);
                 } else {
 
                 }
@@ -308,6 +325,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Autostart scan
         autostartScan();
+    }
+
+    @Override
+    public void onDestroy() {
+        db.close();
+        super.onDestroy();
     }
 
     private void autostartScan() {
@@ -455,6 +478,40 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             }
         } else if (requestCode == kActivityRequestCode_Settings) {
+        } else if (requestCode == NewFieldRequestCode) {
+            if(resultCode == Activity.RESULT_OK) {
+                String result = data.getStringExtra("result");
+                int count = Integer.parseInt(result);
+                Fields = db.getAllFieldData();
+                FieldData field = Fields.get(count - 1);
+                String selectedname = field.getFieldId();
+                fieldString.add(selectedname);
+                ArrayAdapter<String> fieldAdapter = new ArrayAdapter<>(MainActivity.this,
+                        android.R.layout.simple_spinner_item, fieldString);
+
+                fieldAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                field_spinner.setAdapter(fieldAdapter);
+                field_spinner.setOnItemSelectedListener(this);
+                field_spinner.setSelection(fieldAdapter.getPosition(selectedname));
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {}
+        } else if (requestCode == NewWaterSourceRequestCode) {
+            if (resultCode == Activity.RESULT_OK) {
+                String result = data.getStringExtra("result");
+                int count = Integer.parseInt(result);
+                Water = db.getAllWaterSourceData();
+                WaterSourceData water = Water.get(count - 1);
+                String selectedname = water.getWaterSourceId();
+                waterString.add(selectedname);
+                ArrayAdapter<String> waterAdapter = new ArrayAdapter<>(MainActivity.this,
+                        android.R.layout.simple_spinner_item,waterString);
+
+                waterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                water_source_spinner.setAdapter(waterAdapter);
+                water_source_spinner.setOnItemSelectedListener(this);
+                water_source_spinner.setSelection(waterAdapter.getPosition(selectedname));
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {}
         }
     }
 

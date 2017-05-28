@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -43,6 +44,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.google.android.gms.vision.text.Text;
+import com.msiworldwide.environmentalsensor.Data.SensorData;
 import com.msiworldwide.environmentalsensor.ble.BleManager;
 
 import java.io.UnsupportedEncodingException;
@@ -62,15 +64,17 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
 
-    private static final long INTERVAL = 5000*10;
-    private static final long FASTEST_INTERVAL = 500*5;
+    private static final long INTERVAL = 1000*5;
+    private static final long FASTEST_INTERVAL = 1000*1;
     Button BtnMeasurement;
+    Button BtnVisualize;
     //TextView tvLocation;
     TextView received_data;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
     String mLastUpdateTime;
+    SensorData MeasuredData = new SensorData();
 
     // Service Constants
     private final static String TAG = Measurement.class.getSimpleName();
@@ -124,10 +128,17 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         enableRxNotifications();
         //tvLocation = (TextView) findViewById(R.id.tvLocation);
         received_data = (TextView) findViewById(R.id.received_data);
+        BtnVisualize = (Button) findViewById(R.id.visualize);
         BtnMeasurement = (Button) findViewById(R.id.take_measurement);
         BtnMeasurement.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View arg0) {
+            public void onClick(View view) {
+                double lat = mCurrentLocation.getLatitude();
+                double lng = mCurrentLocation.getLongitude();
+                String time = DateFormat.getTimeInstance().format(new Date());
+                String date = DateFormat.getDateInstance().format(new Date());
+                MeasuredData.setlat(lat); MeasuredData.setlng(lng);
+                MeasuredData.setTime(time); MeasuredData.setDate(date);
                 String text = "M";
                 sendData(text);
                 updateUI();
@@ -277,7 +288,15 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                     BluetoothGattCharacteristic characteristic = mUartService.getCharacteristic(UUID.fromString(UUID_RX));
                     byte[] dataread = characteristic.getValue();
                     String data = new String(dataread, Charset.forName("UTF-8"));
-                    received_data.setText("Data: " + data);
+                    String[] values = data.split(",");
+                    int moisture = Integer.parseInt(values[0]); int sunlight = Integer.parseInt(values[1]);
+                    double temp = Double.parseDouble(values[2]); double humid = Double.parseDouble(values[3]);
+                    MeasuredData.setmoisture(moisture); MeasuredData.setsunlight(sunlight);
+                    MeasuredData.settemperature(temp); MeasuredData.sethumidity(humid);
+                    Toast complete = Toast.makeText(getApplicationContext(), "Measurement Complete", Toast.LENGTH_SHORT);
+                    complete.show();
+                    //received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
+                    received_data.setText("Measurement Complete");
                 }
             }, 5000);
         } else {
