@@ -6,7 +6,11 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
+
 public class MeasurementLocations extends AppCompatActivity {
+
+    DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,10 +20,18 @@ public class MeasurementLocations extends AppCompatActivity {
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Measurement Locations");
+
+        db = new DatabaseHelper(getApplicationContext());
     }
 
     public void openMeasurement(View view){
         Intent intent = new Intent(this, Measurement.class);
         startActivity(intent);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        db.deleteCurrentSelections();
     }
 }

@@ -112,6 +112,7 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
 
     public void saveWater(View view) {
         String name = watersourcename.getText().toString();
+        waterSourceData.setWaterSourceId(name);
         waterSourceList = TextUtils.join(",", WaterSources);
         if (TextUtils.isEmpty(name)) {
             watersourcename.setError("Please Enter a Name");
@@ -133,6 +134,37 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
 
             // Showing Alert Message
             alertDialog.show();
+        } else if(db.CheckIsDataAlreadyInDBorNot("WaterSourceData","WaterSourceId",name)){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Water Source Name Already Exists")
+                    .setMessage("Would you like to overwrite this Water Source?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            waterSourceData.setCoordinates(waterSourceList);
+                            water_id = db.updateWaterSourceData(waterSourceData);
+                            Intent returnIntent = new Intent();
+                            returnIntent.putExtra("result", String.valueOf(water_id));
+                            setResult(Activity.RESULT_OK,returnIntent);
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            AlertDialog.Builder builder = new AlertDialog.Builder(NewWaterSource.this);
+                            builder.setMessage("Please Select a New Water Source Name")
+                                    .setCancelable(false)
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                        }
+                                    });
+                            AlertDialog alert = builder.create();
+                            alert.show();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
         }
         else {
             waterSourceData.setWaterSourceId(name);
@@ -257,9 +289,9 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
 
     private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
+        //startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
         // Ensure that there's a camera activity to handle the intent
-/*        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the file where the photo should go
             File photoFile = null;
             try {
@@ -270,14 +302,14 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
-                        "com.example.android.fileprovider",
+                        "com.msiworldwide.environmentalsensor.fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
                 startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO);
             }
-        }*/
+        }
     }
-/*
+
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -297,11 +329,17 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
-            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            Toast saved = Toast.makeText(getApplicationContext(), "Image Saved", Toast.LENGTH_SHORT);
+            saved.show();
+            /*Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             File f = new File(mCurrentPhotoPath);
             Uri contentUri = Uri.fromFile(f);
             mediaScanIntent.setData(contentUri);
-            this.sendBroadcast(mediaScanIntent);
+            this.sendBroadcast(mediaScanIntent);*/
+            /*File f = new File(mCurrentPhotoPath);
+            Uri contentUri = Uri.fromFile(f);
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, contentUri);
+            sendBroadcast(mediaScanIntent);*/
         }
-    }*/
+    }
 }

@@ -27,6 +27,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_FIELD = "FieldData";
     private static final String TABLE_MEASUREMENT_IDENTIFIERS = "MeasurementIdentifiers";
     private static final String TABLE_WATER = "WaterSourceData";
+    private static final String TABLE_CURRENT_SELECTIONS = "CurrentSelections";
 
     // Common column names
     public static final String KEY_MeasurementId = "MeasurementNumberId";
@@ -48,11 +49,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // WaterSourceData
     public static final String KEY_WaterSourceId = "WaterSourceId";
 
+    // Current Selections
+    public static final String KEY_CropId = "CropId";
+
     // Table Create Statements
     // SensorData table create
     private static final String CREATE_TABLE_SensorData = "CREATE TABLE " + TABLE_SENSOR_DATA
             + "(" + KEY_MeasurementId + " INTEGER," + KEY_FieldId + " TEXT," + KEY_Date
-            + "TEXT," + KEY_Time + "TEXT," + KEY_Latitude + " INTEGER," + KEY_Longitude + " INTEGER,"
+            + " TEXT," + KEY_Time + " TEXT," + KEY_Latitude + " INTEGER," + KEY_Longitude + " INTEGER,"
             + KEY_Moisture + " INTEGER," + KEY_Sunlight + " INTEGER," + KEY_Temperature + " INTEGER,"
             + KEY_Humidity + " INTEGER" + ")";
 
@@ -65,6 +69,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_TABLE_WaterSourceData = "CREATE TABLE " + TABLE_WATER +
             "(" + KEY_WaterSourceId + " TEXT PRIMARY KEY," + KEY_Coordinates + " TEXT" + ")";
 
+    private static final String CREATE_TABLE_CurrentSelections = "CREATE TABLE " + TABLE_CURRENT_SELECTIONS +
+            "(" + KEY_FieldId + " INTEGER," + KEY_WaterSourceId + " INTEGER," + KEY_CropId + " INTEGER" + ")";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -76,6 +83,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_FieldData);
         db.execSQL(CREATE_TABLE_MeasurementIdentifiers);
         db.execSQL(CREATE_TABLE_WaterSourceData);
+        db.execSQL(CREATE_TABLE_CurrentSelections);
     }
 
     @Override
@@ -85,6 +93,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS" + TABLE_FIELD);
         db.execSQL("DROP TABLE IF EXISTS" + TABLE_MEASUREMENT_IDENTIFIERS);
         db.execSQL("DROP TABLE IF EXISTS" + TABLE_WATER);
+        db.execSQL("DROP TABLE IF EXISTS" + TABLE_CURRENT_SELECTIONS);
 
         // create new tables
         onCreate(db);
@@ -254,16 +263,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return fieldDatas;
     }
 
+    // Getting a single FieldData
+    public FieldData getFieldData(long FieldData_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + TABLE_FIELD + " WHERE ROWID = "
+                + FieldData_id;
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        FieldData fd = new FieldData();
+        fd.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
+        fd.setCoordinates(c.getString(c.getColumnIndex(KEY_Coordinates)));
+
+
+        return fd;
+    }
+
     // Updating FieldData
-    public int updateFieldData(FieldData fieldData) {
+    public long updateFieldData(FieldData fieldData) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_Coordinates, fieldData.getCoordinates());
 
         // updating row
-        return db.update(TABLE_FIELD, values, KEY_FieldId + " = ?",
+        db.update(TABLE_FIELD, values, KEY_FieldId + " = ?",
                 new String[] {String.valueOf(fieldData.getFieldId())});
+        //
+        String selectQuery = "SELECT rowid, * FROM " + TABLE_FIELD + " WHERE " + KEY_FieldId + " = "
+                + "'" + fieldData.getFieldId() + "'";
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+        long field_id = c.getLong(0);
+        return field_id;
     }
 
     // Deleting FieldData under Field Name
@@ -288,6 +328,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         long measurement_id = db.insert(TABLE_MEASUREMENT_IDENTIFIERS, null, values);
 
         return measurement_id;
+    }
+
+    // Find Identifier value to use
+    public int getNewIdentifier() {
+        int id = 0;
+        String selectQuery = "SELECT  * FROM " + TABLE_MEASUREMENT_IDENTIFIERS +
+                " ORDER BY " + KEY_MeasurementId + " DESC LIMIT 1";
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+        if (c != null)
+            c.moveToFirst();
+        if (c.getCount() > 0) {
+            id = c.getInt(c.getColumnIndex(KEY_MeasurementId));
+        }
+        id++;
+        return id;
     }
 
     // Get all MeasurementId
@@ -376,15 +435,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Updating WaterSourceData
-    public int updateWaterSourceData(WaterSourceData waterSourceData) {
+    public long updateWaterSourceData(WaterSourceData waterSourceData) {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
         values.put(KEY_Coordinates, waterSourceData.getCoordinates());
 
         // updating row
-        return db.update(TABLE_WATER, values, KEY_WaterSourceId + " = ?",
+        db.update(TABLE_WATER, values, KEY_WaterSourceId + " = ?",
                 new String[] {String.valueOf(waterSourceData.getWaterSourceId())});
+        //
+        String selectQuery = "SELECT rowid, * FROM " + TABLE_WATER + " WHERE " + KEY_WaterSourceId + " = "
+                + "'" + waterSourceData.getWaterSourceId() + "'";
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+        long water_id = c.getLong(0);
+        return water_id;
     }
 
     // Deleting WaterSourceData under Water Source Name
@@ -394,6 +462,67 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // delete
         db.delete(TABLE_WATER, KEY_WaterSourceId + " = ?",
                 new String[] {String.valueOf(waterSourceData.getWaterSourceId())});
+    }
+
+    // Creating CurrentSelections
+    public long createCurrentSelections(CurrentSelections currentSelections) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_FieldId, currentSelections.getField_id());
+        values.put(KEY_WaterSourceId, currentSelections.getWater_id());
+        values.put(KEY_CropId, currentSelections.getCrop_id());
+
+        // insert row
+        long currentselections_id = db.insert(TABLE_CURRENT_SELECTIONS, null, values);
+
+        return currentselections_id;
+    }
+
+    // Getting CurrentSelection
+    public CurrentSelections getCurrentSelections() {
+        long CS_id = 1;
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + TABLE_CURRENT_SELECTIONS + " WHERE ROWID = "
+                + CS_id;
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        CurrentSelections cs = new CurrentSelections();
+        cs.setField_id(c.getLong(c.getColumnIndex(KEY_FieldId)));
+        cs.setWater_id(c.getLong(c.getColumnIndex(KEY_WaterSourceId)));
+        cs.setCrop_id(c.getLong(c.getColumnIndex(KEY_CropId)));
+
+
+        return cs;
+    }
+
+    // Deleting CurrentSelections
+    public void deleteCurrentSelections() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // delete
+        db.delete(TABLE_CURRENT_SELECTIONS, null, null);
+    }
+
+    public boolean CheckIsDataAlreadyInDBorNot(String TableName,
+                                                      String dbfield, String fieldValue) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT  * FROM " + TableName + " WHERE "
+                + dbfield + " = " + "'" + fieldValue + "'";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if(cursor.getCount() <= 0){
+            cursor.close();
+            return false;
+        }
+        cursor.close();
+        return true;
     }
 
     // close database

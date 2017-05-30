@@ -184,6 +184,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
 
     public void save(View view) {
         String name = fieldname.getText().toString();
+        //String namecheck = "'" + name + "'";
         fieldData.setFieldId(name);
         if (TextUtils.isEmpty(name)) {
             fieldname.setError("Please Enter a Name");
@@ -205,10 +206,40 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
 
             // Showing Alert Message
             alertDialog.show();
+        } else if(db.CheckIsDataAlreadyInDBorNot("FieldData","FieldId",name)){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Field Name Already Exists")
+                    .setMessage("Would you like to overwrite this field?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            field_id = db.updateFieldData(fieldData);
+                            Intent returnIntent = new Intent();
+                            returnIntent.putExtra("result", String.valueOf(field_id));
+                            setResult(Activity.RESULT_OK,returnIntent);
+                            finish();
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            AlertDialog.Builder builder = new AlertDialog.Builder(NewFieldBoundary.this);
+                            builder.setMessage("Please Select a New Field Name")
+                                    .setCancelable(false)
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                        }
+                                    });
+                            AlertDialog alert = builder.create();
+                            alert.show();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
         }
         else {
             field_id = db.createFieldData(fieldData);
-            loc.setText(name + "," + boundaryCoordsList);
+            //loc.setText(name + "," + boundaryCoordsList);
             Intent returnIntent = new Intent();
             returnIntent.putExtra("result", String.valueOf(field_id));
             setResult(Activity.RESULT_OK,returnIntent);

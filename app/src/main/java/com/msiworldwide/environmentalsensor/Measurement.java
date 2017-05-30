@@ -40,19 +40,30 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import com.google.android.gms.maps.model.Polygon;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.vision.text.Text;
+import com.msiworldwide.environmentalsensor.Data.CurrentSelections;
+import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
+import com.msiworldwide.environmentalsensor.Data.FieldData;
+import com.msiworldwide.environmentalsensor.Data.MeasurementIdentifiers;
 import com.msiworldwide.environmentalsensor.Data.SensorData;
 import com.msiworldwide.environmentalsensor.ble.BleManager;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 //import java.util.logging.Handler;
 
@@ -75,6 +86,22 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     Location mCurrentLocation;
     String mLastUpdateTime;
     SensorData MeasuredData = new SensorData();
+    MeasurementIdentifiers measurementIdentifiers = new MeasurementIdentifiers();
+
+    CurrentSelections currentSelections = new CurrentSelections();
+    long Field_id;
+    FieldData fieldData = new FieldData();
+    String field_coords_str;
+    String[] field_coords_array;
+    ArrayList<LatLng> boundary = new ArrayList<>();
+    ArrayList<Double> lats = new ArrayList<>();
+    ArrayList<Double> lngs = new ArrayList<>();
+    LatLng mNortheast;
+    LatLng mSouthwest;
+
+    int measurement_id;
+
+    DatabaseHelper db;
 
     // Service Constants
     private final static String TAG = Measurement.class.getSimpleName();
@@ -107,6 +134,8 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Measurement");
 
+        db = new DatabaseHelper(getApplicationContext());
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         MapFragment mapFragment = (MapFragment) getFragmentManager() .findFragmentById(R.id.map);
         if (mapFragment!=null){
@@ -137,13 +166,35 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                 double lng = mCurrentLocation.getLongitude();
                 String time = DateFormat.getTimeInstance().format(new Date());
                 String date = DateFormat.getDateInstance().format(new Date());
+                measurementIdentifiers.setDate(date);
                 MeasuredData.setlat(lat); MeasuredData.setlng(lng);
                 MeasuredData.setTime(time); MeasuredData.setDate(date);
                 String text = "M";
                 sendData(text);
-                updateUI();
+                //updateUI();
             }
         });
+
+        currentSelections = db.getCurrentSelections();
+        Field_id = currentSelections.getField_id();
+        fieldData = db.getFieldData(Field_id);
+        measurementIdentifiers.setFieldId(fieldData.getFieldId());
+        MeasuredData.setFieldId(fieldData.getFieldId());
+        field_coords_str = fieldData.getCoordinates();
+        field_coords_array = field_coords_str.split(",");
+        for (int i=0;i<field_coords_array.length/2;i++) {
+            double lat = Double.valueOf(field_coords_array[2*i]);
+            lats.add(lat);
+            double lng = Double.valueOf(field_coords_array[2*i+1]);
+            lngs.add(lng);
+            LatLng point = new LatLng(lat,lng);
+            boundary.add(point);
+        }
+
+        measurement_id = db.getNewIdentifier();
+        measurementIdentifiers.setMeasurementNumberId(measurement_id);
+        MeasuredData.setMeasurementNumberId(measurement_id);
+        received_data.setText(String.valueOf(measurement_id));
 
 
     }
@@ -179,6 +230,19 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     public void onConnected(Bundle bundle) {
         startLocationUpdates();
         mMap.setMyLocationEnabled(true);
+        if (!boundary.isEmpty()) {
+            PolygonOptions opts = new PolygonOptions();
+            for (LatLng location : boundary) {
+                opts.add(location);
+            }
+            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED).fillColor(Color.BLUE));
+            Collections.sort(lats);
+            Collections.sort(lngs);
+            mNortheast = new LatLng(lats.get(lats.size() - 1), lngs.get(lngs.size() - 1));
+            mSouthwest = new LatLng(lats.get(0), lngs.get(0));
+            LatLngBounds field_bound = new LatLngBounds(mSouthwest,mNortheast);
+            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(field_bound,0));
+        }
     }
 
     protected void startLocationUpdates() {
@@ -293,10 +357,15 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                     double temp = Double.parseDouble(values[2]); double humid = Double.parseDouble(values[3]);
                     MeasuredData.setmoisture(moisture); MeasuredData.setsunlight(sunlight);
                     MeasuredData.settemperature(temp); MeasuredData.sethumidity(humid);
+                    db.createMeasurementId(measurementIdentifiers);
+                    db.createSensorData(MeasuredData);
                     Toast complete = Toast.makeText(getApplicationContext(), "Measurement Complete", Toast.LENGTH_SHORT);
                     complete.show();
-                    //received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
-                    received_data.setText("Measurement Complete");
+                    received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
+                    //received_data.setText("Measurement Complete");
+                    LatLng loc = new LatLng(MeasuredData.getLat(), MeasuredData.getLng());
+                    mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                            .title("M:" + values[0] + ", S:" + values[1] + ", T:" + values[2] + ", H:" + values[3]));
                 }
             }, 5000);
         } else {

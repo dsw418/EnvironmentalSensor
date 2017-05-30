@@ -62,6 +62,17 @@
         <activity android:name=".Temperature" />
         <activity android:name=".Humidity" />
         <activity android:name=".Sunlight"></activity>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.msiworldwide.environmentalsensor.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/filepath"/>
+        </provider>
+
     </application>
 
 </manifest>
