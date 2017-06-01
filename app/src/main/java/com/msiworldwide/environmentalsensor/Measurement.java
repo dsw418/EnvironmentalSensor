@@ -133,6 +133,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Measurement");
+        mToolbar.setTitleTextColor(Color.WHITE);
 
         db = new DatabaseHelper(getApplicationContext());
 

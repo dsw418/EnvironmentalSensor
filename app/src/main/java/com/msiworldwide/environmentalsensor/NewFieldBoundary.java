@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Handler;
 //import android.support.v7.app.AlertDialog;
@@ -66,6 +67,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("New Field Boundary");
+        mToolbar.setTitleTextColor(Color.WHITE);
 
         createLocationRequest();
         mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API)

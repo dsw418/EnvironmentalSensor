@@ -1,6 +1,7 @@
 package com.msiworldwide.environmentalsensor;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -8,7 +9,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
-public class SoilMoisture extends AppCompatActivity {
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
+
+public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallback {
+
+    private GoogleMap mMap;
+
+    DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +31,15 @@ public class SoilMoisture extends AppCompatActivity {
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Soil Moisture");
+        mToolbar.setTitleTextColor(Color.WHITE);
+
+        db = new DatabaseHelper(getApplicationContext());
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        MapFragment mapFragment = (MapFragment) getFragmentManager() .findFragmentById(R.id.soil_map);
+        if (mapFragment!=null){
+            mapFragment.getMapAsync(this);
+        }
     }
 
     @Override
@@ -56,5 +78,16 @@ public class SoilMoisture extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        // Add a marker in Blacksburg and move the camera
+        LatLng blacksburg = new LatLng(37.229572,  -80.413940);
+        mMap.addMarker(new MarkerOptions().position(blacksburg).title("Marker in Blacksburg"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(blacksburg));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(10));
     }
 }

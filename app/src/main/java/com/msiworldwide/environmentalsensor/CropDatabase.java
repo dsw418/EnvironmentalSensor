@@ -1,5 +1,6 @@
 package com.msiworldwide.environmentalsensor;
 
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -14,5 +15,6 @@ public class CropDatabase extends AppCompatActivity {
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Crop");
+        mToolbar.setTitleTextColor(Color.WHITE);
     }
 }

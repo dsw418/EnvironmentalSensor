@@ -1,6 +1,7 @@
 package com.msiworldwide.environmentalsensor;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -21,6 +22,7 @@ public class VisualizeResults extends AppCompatActivity {
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Visualize Results");
+        mToolbar.setTitleTextColor(Color.WHITE);
     }
 
 

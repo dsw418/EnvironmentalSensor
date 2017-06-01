@@ -1,6 +1,7 @@
 package com.msiworldwide.environmentalsensor;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +19,7 @@ public class Temperature extends AppCompatActivity {
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Temperature");
+        mToolbar.setTitleTextColor(Color.WHITE);
     }
 
     @Override

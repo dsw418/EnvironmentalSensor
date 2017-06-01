@@ -30,6 +30,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -142,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("Home");
+        mToolbar.setTitleTextColor(Color.WHITE);
 
         // Init variables
         mBleManager = BleManager.getInstance(this);

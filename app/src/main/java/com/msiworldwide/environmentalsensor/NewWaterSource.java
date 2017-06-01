@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.Manifest;
+import android.graphics.Color;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -82,6 +83,7 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         getSupportActionBar().setTitle("New Water Source");
+        mToolbar.setTitleTextColor(Color.WHITE);
 
         createLocationRequest();
         mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(LocationServices.API)
