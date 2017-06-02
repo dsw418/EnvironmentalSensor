@@ -23,11 +23,13 @@ import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -87,11 +89,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener, BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
+        BleManager.BleManagerListener, BleUtils.ResetBluetoothAdapterListener {
 
     // Constants
     private final static String TAG = MainActivity.class.getSimpleName();
-    private final static long kMinDelayToUpdateUI = 200;    // in milliseconds
     private static final String kGenericAttributeService = "00001801-0000-1000-8000-00805F9B34FB";
     private static final String kServiceChangedCharacteristic = "00002A05-0000-1000-8000-00805F9B34FB";
 
@@ -134,6 +136,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     List<WaterSourceData> Water;
 
     CurrentSelections currentSelections = new CurrentSelections();
+    TextView connectionStatus;
+    boolean connected = false;
+    IntentFilter filter = new IntentFilter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -232,6 +237,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         devices_spinner.setAdapter(devadapter);
         devices_spinner.setOnItemSelectedListener(this);
 
+        connectionStatus = (TextView) findViewById(R.id.connection);
+
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        this.registerReceiver(mReceiver, filter);
         }
 
     public void openMeasurementLocations(View view){
@@ -357,6 +368,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Autostart scan
         autostartScan();
+        registerReceiver(mReceiver,filter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -392,12 +410,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onDisconnected() {
         Log.d(TAG, "MainActivity onDisconnected");
         //showConnectionStatus(false);
+        /*connectionStatus.setText("No Bluetooth Connection");
+        connected = false;*/
     }
 
     private void connect(BluetoothDevice device) {
         boolean isConnecting = mBleManager.connect(this, device.getAddress());
         /*if (isConnecting) {
-            showConnectionStatus(true);
+            connectionStatus.setText("Connected");
+            connected = true;
         }*/
     }
 
@@ -1107,6 +1128,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //mRetainedDataFragment.mPeripheralList = mPeripheralList;
     }
 
+    //The BroadcastReceiver that listens for bluetooth broadcasts
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                //Device found
+            }
+            else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                //Device is now connected
+                connectionStatus.setText("Connected");
+                connected = true;
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                //Done searching
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
+                //Device is about to disconnect
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                //Device has disconnected
+                connectionStatus.setText("No Bluetooth Connection");
+                connected = false;
+            }
+        }
+    };
 
 }
 

@@ -47,7 +47,6 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
-import com.google.android.gms.vision.text.Text;
 import com.msiworldwide.environmentalsensor.Data.CurrentSelections;
 import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
 import com.msiworldwide.environmentalsensor.Data.FieldData;

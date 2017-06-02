@@ -56,9 +56,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // SensorData table create
     private static final String CREATE_TABLE_SensorData = "CREATE TABLE " + TABLE_SENSOR_DATA
             + "(" + KEY_MeasurementId + " INTEGER," + KEY_FieldId + " TEXT," + KEY_Date
-            + " TEXT," + KEY_Time + " TEXT," + KEY_Latitude + " INTEGER," + KEY_Longitude + " INTEGER,"
-            + KEY_Moisture + " INTEGER," + KEY_Sunlight + " INTEGER," + KEY_Temperature + " INTEGER,"
-            + KEY_Humidity + " INTEGER" + ")";
+            + " TEXT," + KEY_Time + " TEXT," + KEY_Latitude + " REAL," + KEY_Longitude + " REAL,"
+            + KEY_Moisture + " INTEGER," + KEY_Sunlight + " INTEGER," + KEY_Temperature + " REAL,"
+            + KEY_Humidity + " REAL" + ")";
 
     private static final String CREATE_TABLE_FieldData = "CREATE TABLE " + TABLE_FIELD +
             "(" + KEY_FieldId + " TEXT PRIMARY KEY," + KEY_Coordinates + " TEXT" + ")";
@@ -140,12 +140,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         sd.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
         sd.setDate(c.getString(c.getColumnIndex(KEY_Date)));
         sd.setTime(c.getString(c.getColumnIndex(KEY_Time)));
-        sd.setlat(c.getInt(c.getColumnIndex(KEY_Latitude)));
-        sd.setlng(c.getInt(c.getColumnIndex(KEY_Longitude)));
+        sd.setlat(c.getDouble(c.getColumnIndex(KEY_Latitude)));
+        sd.setlng(c.getDouble(c.getColumnIndex(KEY_Longitude)));
         sd.setmoisture(c.getInt(c.getColumnIndex(KEY_Moisture)));
         sd.setsunlight(c.getInt(c.getColumnIndex(KEY_Sunlight)));
-        sd.settemperature(c.getInt(c.getColumnIndex(KEY_Temperature)));
-        sd.sethumidity(c.getInt(c.getColumnIndex(KEY_Humidity)));
+        sd.settemperature(c.getDouble(c.getColumnIndex(KEY_Temperature)));
+        sd.sethumidity(c.getDouble(c.getColumnIndex(KEY_Humidity)));
 
         return sd;
     }
@@ -168,17 +168,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 sd.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
                 sd.setDate(c.getString(c.getColumnIndex(KEY_Date)));
                 sd.setTime(c.getString(c.getColumnIndex(KEY_Time)));
-                sd.setlat(c.getInt(c.getColumnIndex(KEY_Latitude)));
-                sd.setlng(c.getInt(c.getColumnIndex(KEY_Longitude)));
+                sd.setlat(c.getDouble(c.getColumnIndex(KEY_Latitude)));
+                sd.setlng(c.getDouble(c.getColumnIndex(KEY_Longitude)));
                 sd.setmoisture(c.getInt(c.getColumnIndex(KEY_Moisture)));
                 sd.setsunlight(c.getInt(c.getColumnIndex(KEY_Sunlight)));
-                sd.settemperature(c.getInt(c.getColumnIndex(KEY_Temperature)));
-                sd.sethumidity(c.getInt(c.getColumnIndex(KEY_Humidity)));
+                sd.settemperature(c.getDouble(c.getColumnIndex(KEY_Temperature)));
+                sd.sethumidity(c.getDouble(c.getColumnIndex(KEY_Humidity)));
 
                 // adding to list
                 sensorDatas.add(sd);
             } while (c.moveToNext());
         }
+        return sensorDatas;
+    }
+
+    // Get all SensorData under an id
+    public List<SensorData> getAllSensorDatabyId(int measurement_id) {
+        List<SensorData> sensorDatas = new ArrayList<>();
+
+        String selectQuery = "SELECT  * FROM " + TABLE_SENSOR_DATA + " WHERE "
+                + KEY_MeasurementId + " = " + measurement_id;
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (c.moveToFirst()) {
+            do {
+                SensorData sd = new SensorData();
+                sd.setMeasurementNumberId(c.getInt(c.getColumnIndex(KEY_MeasurementId)));
+                sd.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
+                sd.setDate(c.getString(c.getColumnIndex(KEY_Date)));
+                sd.setTime(c.getString(c.getColumnIndex(KEY_Time)));
+                sd.setlat(c.getDouble(c.getColumnIndex(KEY_Latitude)));
+                sd.setlng(c.getDouble(c.getColumnIndex(KEY_Longitude)));
+                sd.setmoisture(c.getInt(c.getColumnIndex(KEY_Moisture)));
+                sd.setsunlight(c.getInt(c.getColumnIndex(KEY_Sunlight)));
+                sd.settemperature(c.getDouble(c.getColumnIndex(KEY_Temperature)));
+                sd.sethumidity(c.getDouble(c.getColumnIndex(KEY_Humidity)));
+
+                // adding to list
+                sensorDatas.add(sd);
+            } while(c.moveToNext());
+        }
+
         return sensorDatas;
     }
 
@@ -203,12 +238,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 sd.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
                 sd.setDate(c.getString(c.getColumnIndex(KEY_Date)));
                 sd.setTime(c.getString(c.getColumnIndex(KEY_Time)));
-                sd.setlat(c.getInt(c.getColumnIndex(KEY_Latitude)));
-                sd.setlng(c.getInt(c.getColumnIndex(KEY_Longitude)));
+                sd.setlat(c.getDouble(c.getColumnIndex(KEY_Latitude)));
+                sd.setlng(c.getDouble(c.getColumnIndex(KEY_Longitude)));
                 sd.setmoisture(c.getInt(c.getColumnIndex(KEY_Moisture)));
                 sd.setsunlight(c.getInt(c.getColumnIndex(KEY_Sunlight)));
-                sd.settemperature(c.getInt(c.getColumnIndex(KEY_Temperature)));
-                sd.sethumidity(c.getInt(c.getColumnIndex(KEY_Humidity)));
+                sd.settemperature(c.getDouble(c.getColumnIndex(KEY_Temperature)));
+                sd.sethumidity(c.getDouble(c.getColumnIndex(KEY_Humidity)));
 
                 // adding to list
                 sensorDatas.add(sd);
@@ -347,6 +382,32 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         id++;
         return id;
+    }
+
+    // Get all MeasurementId for a Field Name
+    public List<MeasurementIdentifiers> getMeasurementIdbyField(String FieldId) {
+        List<MeasurementIdentifiers> measurementIdentifierses = new ArrayList<>();
+        String selectQuery = "SELECT  * FROM " + TABLE_MEASUREMENT_IDENTIFIERS + " WHERE " +
+        KEY_FieldId + " = '" + FieldId + "'" ;
+
+        Log.e(LOG, selectQuery);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if(c.moveToFirst()) {
+            do {
+                MeasurementIdentifiers mid = new MeasurementIdentifiers();
+                mid.setMeasurementNumberId(c.getInt(c.getColumnIndex(KEY_MeasurementId)));
+                mid.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
+                mid.setDate(c.getString(c.getColumnIndex(KEY_Date)));
+
+                // adding to list
+                measurementIdentifierses.add(mid);
+            } while(c.moveToNext());
+        }
+        return measurementIdentifierses;
     }
 
     // Get all MeasurementId
