@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -32,7 +33,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
 import com.msiworldwide.environmentalsensor.Data.WaterSourceData;
-import com.msiworldwide.environmentalsensor.ble.BleManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,12 +99,25 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
     }
 
     public void MeasureWaterLocation(View view) {
-        double lat = mCurrentLocation.getLatitude();
-        double lng = mCurrentLocation.getLongitude();
-        String coords = String.valueOf(lat) + "," + String.valueOf(lng);
-        WaterSources.add(coords);
-        sourceCount.setText(coords);
-        count++;
+        if (mCurrentLocation == null) {
+            AlertDialog.Builder location = new AlertDialog.Builder(this);
+            location.setTitle("No Location Data")
+                    .setMessage("Please Check if GPS is enabled")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            AlertDialog alert = location.create();
+            alert.show();
+        } else {
+            double lat = mCurrentLocation.getLatitude();
+            double lng = mCurrentLocation.getLongitude();
+            String coords = String.valueOf(lat) + "," + String.valueOf(lng);
+            WaterSources.add(coords);
+            sourceCount.setText(coords);
+            count++;
+        }
     }
 
     public void addSource(View view) {
@@ -207,7 +220,7 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 
@@ -271,7 +284,7 @@ public class NewWaterSource extends AppCompatActivity implements LocationListene
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == 1) {
             for(int i = 0; i < permissions.length; i++) {
                 if (grantResults[i] == PackageManager.PERMISSION_GRANTED && permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {

@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,7 +19,6 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.TileOverlay;
@@ -151,8 +149,7 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
 
     public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
 
-                if (position == 0) {
-                } else {
+                if (position != 0) {
                     measurement_id = measurementIdentifiers.get(position - 1).getMeasurement_number_id();
                     DataList = db.getAllSensorDatabyId(measurement_id);
                     addHeatMap(DataList);
@@ -177,7 +174,7 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             for (LatLng location : boundary) {
                 opts.add(location);
             }
-            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED).fillColor(Color.BLUE));
+            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED));
             Collections.sort(lats);
             Collections.sort(lngs);
             mNortheast = new LatLng(lats.get(lats.size() - 1), lngs.get(lngs.size() - 1));

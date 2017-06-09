@@ -1,28 +1,20 @@
 package com.msiworldwide.environmentalsensor;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.bluetooth.BluetoothDevice;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
-import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.telecom.Connection;
-import android.text.SpannableStringBuilder;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +31,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -54,17 +45,13 @@ import com.msiworldwide.environmentalsensor.Data.MeasurementIdentifiers;
 import com.msiworldwide.environmentalsensor.Data.SensorData;
 import com.msiworldwide.environmentalsensor.ble.BleManager;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.DoubleBuffer;
 import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
-//import java.util.logging.Handler;
 
 public class Measurement extends AppCompatActivity implements OnMapReadyCallback,
         LocationListener,
@@ -75,7 +62,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     private GoogleMap mMap;
 
     private static final long INTERVAL = 1000*5;
-    private static final long FASTEST_INTERVAL = 1000*1;
+    private static final long FASTEST_INTERVAL = 1000;
     Button BtnMeasurement;
     Button BtnVisualize;
     //TextView tvLocation;
@@ -107,7 +94,6 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     public static final String UUID_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
     public static final String UUID_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     public static final String UUID_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-    public static final String UUID_DFU = "00001530-1212-EFDE-1523-785FEABCD123";
     public static final int kTxMaxCharacters = 20;
     private boolean isRxNotificationEnabled = false;
 
@@ -162,16 +148,30 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         BtnMeasurement.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                double lat = mCurrentLocation.getLatitude();
-                double lng = mCurrentLocation.getLongitude();
-                String time = DateFormat.getTimeInstance().format(new Date());
-                String date = DateFormat.getDateInstance().format(new Date());
-                measurementIdentifiers.setDate(date);
-                MeasuredData.setlat(lat); MeasuredData.setlng(lng);
-                MeasuredData.setTime(time); MeasuredData.setDate(date);
-                String text = "M";
-                sendData(text);
-                //updateUI();
+                if (mCurrentLocation == null) {
+                    AlertDialog.Builder location = new AlertDialog.Builder(Measurement.this);
+                    location.setTitle("No Location Data")
+                            .setMessage("Please Check if GPS is enabled")
+                            .setCancelable(false)
+                            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                }
+                            });
+                    AlertDialog alert = location.create();
+                    alert.show();
+                } else {
+                    double lat = mCurrentLocation.getLatitude();
+                    double lng = mCurrentLocation.getLongitude();
+                    String time = DateFormat.getTimeInstance().format(new Date());
+                    String date = DateFormat.getDateInstance().format(new Date());
+                    measurementIdentifiers.setDate(date);
+                    MeasuredData.setlat(lat);
+                    MeasuredData.setlng(lng);
+                    MeasuredData.setTime(time);
+                    MeasuredData.setDate(date);
+                    String text = "M";
+                    sendData(text);
+                }
             }
         });
 
@@ -235,7 +235,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
             for (LatLng location : boundary) {
                 opts.add(location);
             }
-            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED).fillColor(Color.BLUE));
+            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED));
             Collections.sort(lats);
             Collections.sort(lngs);
             mNortheast = new LatLng(lats.get(lats.size() - 1), lngs.get(lngs.size() - 1));
@@ -256,7 +256,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 
@@ -264,24 +264,6 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-    }
-
-    private void updateUI() {
-        if (null != mCurrentLocation) {
-/*            String lat = String.valueOf(mCurrentLocation.getLatitude());
-            String lng = String.valueOf(mCurrentLocation.getLongitude());
-            tvLocation.setText("At Time: " + mLastUpdateTime + "\n" +
-                    "Latitude: " + lat + "\n" +
-                    "Longitude: " + lng + "\n" +
-                    "Accuracy: " + mCurrentLocation.getAccuracy() + "\n" +
-                    "Provider: " + mCurrentLocation.getProvider());*/
-
-            LatLng loc = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
-            mMap.clear();
-            mMap.addMarker(new MarkerOptions().position(loc).title("Current Location"));
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
-            mMap.moveCamera(CameraUpdateFactory.zoomTo(18));
-        }
     }
 
     @Override
@@ -370,6 +352,16 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
             }, 5000);
         } else {
             Log.w(TAG, "Uart Service not discovered. Unable to send data");
+            AlertDialog.Builder location = new AlertDialog.Builder(this);
+            location.setTitle("No Bluetooth Connection")
+                    .setMessage("Please connect to a sensor")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            AlertDialog alert = location.create();
+            alert.show();
         }
     }
 
@@ -439,54 +431,4 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         isRxNotificationEnabled = true;
         mBleManager.enableNotification(mUartService, UUID_RX, true);
     }
-
-    // region SendDataWithCompletionHandler
-    protected interface SendDataCompletionHandler {
-        void sendDataResponse(String data);
-    }
-
-    final private Handler sendDataTimeoutHandler = new Handler();
-    private Runnable sendDataRunnable = null;
-    private SendDataCompletionHandler sendDataCompletionHandler = null;
-    protected void sendData(byte[] data, SendDataCompletionHandler completionHandler) {
-
-        if (completionHandler == null) {
-            sendData(data);
-            return;
-        }
-
-        if (!isRxNotificationEnabled) {
-            Log.w(TAG, "sendData warning: RX notification not enabled. completionHandler will not be executed");
-        }
-
-        if (sendDataRunnable != null || sendDataCompletionHandler != null) {
-            Log.d(TAG, "sendData error: waiting for a previous response");
-            return;
-        }
-
-        Log.d(TAG, "sendData");
-        sendDataCompletionHandler = completionHandler;
-        sendDataRunnable = new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "sendData timeout");
-                final SendDataCompletionHandler dataCompletionHandler =  sendDataCompletionHandler;
-
-                Measurement.this.sendDataRunnable = null;
-                Measurement.this.sendDataCompletionHandler = null;
-
-                dataCompletionHandler.sendDataResponse(null);
-            }
-        };
-
-        sendDataTimeoutHandler.postDelayed(sendDataRunnable, 2*1000);
-        sendData(data);
-
-    }
-
-    protected boolean isWaitingForSendDataResponse() {
-        return sendDataRunnable != null;
-    }
-
-    // endregion
 }

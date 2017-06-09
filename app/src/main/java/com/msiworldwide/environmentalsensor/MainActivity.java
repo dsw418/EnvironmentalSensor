@@ -1,31 +1,16 @@
 package com.msiworldwide.environmentalsensor;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -34,37 +19,15 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
-import android.os.Handler;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
-import android.text.Spanned;
 import android.util.Log;
-import android.util.SparseArray;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.ScrollView;
-import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -85,8 +48,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
@@ -94,8 +55,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Constants
     private final static String TAG = MainActivity.class.getSimpleName();
-    private static final String kGenericAttributeService = "00001801-0000-1000-8000-00805F9B34FB";
-    private static final String kServiceChangedCharacteristic = "00002A05-0000-1000-8000-00805F9B34FB";
 
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 1;
 
@@ -110,7 +69,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private BleManager mBleManager;
     private boolean mIsScanPaused = true;
     private BleDevicesScanner mScanner;
-    private PeripheralList mPeripheralList;
 
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private BluetoothDeviceData mSelectedDeviceData;
@@ -153,7 +111,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Init variables
         mBleManager = BleManager.getInstance(this);
         restoreRetainedDataFragment();
-        mPeripheralList = new PeripheralList();
 
         db = new DatabaseHelper(getApplicationContext());
 
@@ -269,60 +226,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         switch (parent.getId()) {
             case R.id.Field_Select:
-                if (position == 0) {
-                } else if (position == 1) {
+                if (position == 1) {
                     Intent intent = new Intent(this, NewFieldBoundary.class);
                     startActivityForResult(intent, NewFieldRequestCode);
-                } else {
+                } else if (position > 1) {
                     String f_id = String.valueOf(position - 1);
                     long field_id = Long.parseLong(f_id);
                     currentSelections.setField_id(field_id);
                 }
                 break;
             case R.id.Water_Source_Select:
-                if (position == 0) {
-
-                } else if (position == 1) {
+                if (position == 1) {
                     Intent intent = new Intent(this, NewWaterSource.class);
                     startActivityForResult(intent, NewWaterSourceRequestCode);
-                } else {
+                } else if (position > 1) {
                     String w_id = String.valueOf(position - 1);
                     long water_id = Long.parseLong(w_id);
                     currentSelections.setWater_id(water_id);
                 }
                 break;
             case R.id.Crop_Select:
-                if (position == 0) {
-
-                } else if (position == 1) {
+                if (position == 1) {
                     Intent intent = new Intent(this, CropDatabase.class);
                     startActivity(intent);
-                } else {
+                } else if(position > 1) {
 
                 }
                 break;
             case R.id.Device_Select:
-                if (position == 0) {
-                } else if (position == 1) {
+                if (position == 1) {
                     //mScannedDevices.clear();
 
                     startScan(null);
                     Toast scanning = Toast.makeText(getApplicationContext(), "Scanning...", Toast.LENGTH_SHORT);
                     scanning.show();
                     // devices list
-                    //mScannedDevicesAdapter.notifyDataSetChanged();
-                    ArrayList<BluetoothDeviceData> filteredPeripherals = mPeripheralList.filteredPeripherals(false);
                     devString.clear();
-                    //ArrayList<String> devString = new ArrayList<>();
                     devString.add("Select Device");
                     devString.add("Refresh");
-
-    /*            if (filteredPeripherals.size() > 0){
-                    for (int i = 0; i<filteredPeripherals.size();i++) {
-                        mSelectedDeviceData = filteredPeripherals.get(i);
-                        devString.add(mSelectedDeviceData.getNiceName());
-                    }
-                }*/
 
                     if (mScannedDevices.size() > 0) {
                         for (int i = 0; i < mScannedDevices.size(); i++) {
@@ -337,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     devadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     devices_spinner.setAdapter(devadapter);
                     devices_spinner.setOnItemSelectedListener(this);
-                } else {
+                } else if (position > 1) {
                     stopScanning();
                     int index = position - 2;
                     if (mScannedDevices.size() > 0) {
@@ -801,7 +742,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     // region Helpers
     private class BluetoothDeviceData {
         BluetoothDevice device;
-        public int rssi;
+        private int rssi;
         byte[] scanRecord;
         private String advertisedName;           // Advertised name
         private String cachedNiceName;
@@ -813,7 +754,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         static final int kType_Beacon = 2;
         static final int kType_UriBeacon = 3;
 
-        public int type;
+        private int type;
         int txPower;
         ArrayList<UUID> uuids;
 
@@ -841,242 +782,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
     //endregion
 
-    // region Peripheral List
-    private class PeripheralList {
-        // Constants
-        private final static int kMaxRssiValue = -100;
 
-        private final static String kPreferences = "PeripheralList_prefs";
-        private final static String kPreferences_filtersName = "filtersName";
-        private final static String kPreferences_filtersIsNameExact = "filtersIsNameExact";
-        private final static String kPreferences_filtersIsNameCaseInsensitive = "filtersIsNameCaseInsensitive";
-        private final static String kPreferences_filtersRssi = "filtersRssi";
-        private final static String kPreferences_filtersUnnamedEnabled = "filtersUnnamedEnabled";
-        private final static String kPreferences_filtersUartEnabled = "filtersUartEnabled";
-
-        // Data
-        private String mFilterName;
-        private boolean mIsFilterNameExact;
-        private boolean mIsFilterNameCaseInsensitive;
-        private int mRssiFilterValue;
-        private boolean mIsUnnamedEnabled;
-        private boolean mIsOnlyUartEnabled;
-        private ArrayList<BluetoothDeviceData> mCachedFilteredPeripheralList;
-        private boolean mIsFilterDirty;
-
-        private SharedPreferences.Editor preferencesEditor = getSharedPreferences(kPreferences, MODE_PRIVATE).edit();
-
-        PeripheralList() {
-            mIsFilterDirty = true;
-            mCachedFilteredPeripheralList = new ArrayList<>();
-
-            SharedPreferences preferences = getSharedPreferences(kPreferences, MODE_PRIVATE);
-            mFilterName = preferences.getString(kPreferences_filtersName, null);
-            mIsFilterNameExact = preferences.getBoolean(kPreferences_filtersIsNameExact, false);
-            mIsFilterNameCaseInsensitive = preferences.getBoolean(kPreferences_filtersIsNameCaseInsensitive, true);
-            mRssiFilterValue = preferences.getInt(kPreferences_filtersRssi, kMaxRssiValue);
-            mIsUnnamedEnabled = preferences.getBoolean(kPreferences_filtersUnnamedEnabled, true);
-            mIsOnlyUartEnabled = preferences.getBoolean(kPreferences_filtersUartEnabled, false);
-        }
-
-        String getFilterName() {
-            return mFilterName;
-        }
-
-        void setFilterName(String name) {
-            mFilterName = name;
-            mIsFilterDirty = true;
-
-            preferencesEditor.putString(kPreferences_filtersName, name);
-            preferencesEditor.apply();
-        }
-
-        boolean isFilterNameExact() {
-            return mIsFilterNameExact;
-        }
-
-        void setFilterNameExact(boolean exact) {
-            mIsFilterNameExact = exact;
-            mIsFilterDirty = true;
-
-            preferencesEditor.putBoolean(kPreferences_filtersIsNameExact, exact);
-            preferencesEditor.apply();
-        }
-
-        boolean isFilterNameCaseInsensitive() {
-            return mIsFilterNameCaseInsensitive;
-        }
-
-        void setFilterNameCaseInsensitive(boolean caseInsensitive) {
-            mIsFilterNameCaseInsensitive = caseInsensitive;
-            mIsFilterDirty = true;
-
-            preferencesEditor.putBoolean(kPreferences_filtersIsNameCaseInsensitive, caseInsensitive);
-            preferencesEditor.apply();
-        }
-
-        int getFilterRssiValue() {
-            return mRssiFilterValue;
-        }
-
-        void setFilterRssiValue(int value) {
-            mRssiFilterValue = value;
-            mIsFilterDirty = true;
-
-            preferencesEditor.putInt(kPreferences_filtersRssi, value);
-            preferencesEditor.apply();
-        }
-
-        boolean isFilterUnnamedEnabled() {
-            return mIsUnnamedEnabled;
-        }
-
-        void setFilterUnnamedEnabled(boolean enabled) {
-            mIsUnnamedEnabled = enabled;
-            mIsFilterDirty = true;
-
-            preferencesEditor.putBoolean(kPreferences_filtersUnnamedEnabled, enabled);
-            preferencesEditor.apply();
-        }
-
-
-        boolean isFilterOnlyUartEnabled() {
-            return mIsOnlyUartEnabled;
-        }
-
-        void setFilterOnlyUartEnabled(boolean enabled) {
-            mIsOnlyUartEnabled = enabled;
-            mIsFilterDirty = true;
-
-            preferencesEditor.putBoolean(kPreferences_filtersUartEnabled, enabled);
-            preferencesEditor.apply();
-        }
-
-
-        void setDefaultFilters() {
-            mFilterName = null;
-            mIsFilterNameExact = false;
-            mIsFilterNameCaseInsensitive = true;
-            mRssiFilterValue = kMaxRssiValue;
-            mIsUnnamedEnabled = true;
-            mIsOnlyUartEnabled = false;
-        }
-
-        boolean isAnyFilterEnabled() {
-            return (mFilterName != null && !mFilterName.isEmpty()) || mRssiFilterValue > kMaxRssiValue || mIsOnlyUartEnabled || !mIsUnnamedEnabled;
-        }
-
-        ArrayList<BluetoothDeviceData> filteredPeripherals(boolean forceUpdate) {
-            if (mIsFilterDirty || forceUpdate) {
-                mCachedFilteredPeripheralList = calculateFilteredPeripherals();
-                mIsFilterDirty = false;
-            }
-
-            return mCachedFilteredPeripheralList;
-        }
-
-        private ArrayList<BluetoothDeviceData> calculateFilteredPeripherals() {
-
-            ArrayList<BluetoothDeviceData> peripherals = (ArrayList<BluetoothDeviceData>) mScannedDevices.clone();
-
-            // Sort devices alphabetically
-            Collections.sort(peripherals, new Comparator<BluetoothDeviceData>() {
-                @Override
-                public int compare(BluetoothDeviceData o1, BluetoothDeviceData o2) {
-                    return o1.getNiceName().compareToIgnoreCase(o2.getNiceName());
-                }
-            });
-
-            // Apply filters
-            if (mIsOnlyUartEnabled) {
-                for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
-                    if (it.next().type != BluetoothDeviceData.kType_Uart) {
-                        it.remove();
-                    }
-                }
-            }
-
-            if (!mIsUnnamedEnabled) {
-                for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
-                    if (it.next().getName() == null) {
-                        it.remove();
-                    }
-                }
-            }
-
-            if (mFilterName != null && !mFilterName.isEmpty()) {
-                for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
-                    String name = it.next().getName();
-                    boolean testPassed = false;
-                    if (name != null) {
-                        if (mIsFilterNameExact) {
-                            if (mIsFilterNameCaseInsensitive) {
-                                testPassed = name.compareToIgnoreCase(mFilterName) == 0;
-                            } else {
-                                testPassed = name.compareTo(mFilterName) == 0;
-                            }
-                        } else {
-                            if (mIsFilterNameCaseInsensitive) {
-                                testPassed = name.toLowerCase().contains(mFilterName.toLowerCase());
-                            } else {
-                                testPassed = name.contains(mFilterName);
-                            }
-                        }
-                    }
-                    if (!testPassed) {
-                        it.remove();
-                    }
-                }
-            }
-
-            for (Iterator<BluetoothDeviceData> it = peripherals.iterator(); it.hasNext(); ) {
-                if (it.next().rssi < mRssiFilterValue) {
-                    it.remove();
-                }
-            }
-
-            return peripherals;
-        }
-
-        String filtersDescription() {
-            String filtersTitle = null;
-
-            if (mFilterName != null && !mFilterName.isEmpty()) {
-                filtersTitle = mFilterName;
-            }
-
-            if (mRssiFilterValue > kMaxRssiValue) {
-                String rssiString = String.format(Locale.ENGLISH, getString(R.string.scan_filters_name_rssi_format), mRssiFilterValue);
-                if (filtersTitle != null && !filtersTitle.isEmpty()) {
-                    filtersTitle = filtersTitle + ", " + rssiString;
-                } else {
-                    filtersTitle = rssiString;
-                }
-            }
-
-            if (!mIsUnnamedEnabled) {
-                String namedString = getString(R.string.scan_filters_name_named);
-                if (filtersTitle != null && !filtersTitle.isEmpty()) {
-                    filtersTitle = filtersTitle + ", " + namedString;
-                } else {
-                    filtersTitle = namedString;
-                }
-            }
-
-            if (mIsOnlyUartEnabled) {
-                String uartString = getString(R.string.scan_filters_name_uart);
-                if (filtersTitle != null && !filtersTitle.isEmpty()) {
-                    filtersTitle = filtersTitle + ", " + uartString;
-                } else {
-                    filtersTitle = uartString;
-                }
-            }
-
-            return filtersTitle;
-        }
-    }
-
-    // endregion
 
     public static class DataFragment extends Fragment {
         private ArrayList<BluetoothDeviceData> mScannedDevices;

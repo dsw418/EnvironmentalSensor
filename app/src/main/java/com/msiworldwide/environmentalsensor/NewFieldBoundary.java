@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Handler;
-//import android.support.v7.app.AlertDialog;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -34,7 +34,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private static final long INTERVAL = 1000*5;
-    private static final long FASTEST_INTERVAL = 1000*1;
+    private static final long FASTEST_INTERVAL = 1000;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
@@ -78,13 +78,27 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
     }
 
     public void start_loc(View view) {
-        if (!started) {
-            double lat = mCurrentLocation.getLatitude();
-            double lng = mCurrentLocation.getLongitude();
-            String coords = String.valueOf(lat) + "," + String.valueOf(lng);
-            boundary.add(coords);
-            loc.setText(coords);
-            start();
+        if (mCurrentLocation == null) {
+            AlertDialog.Builder location = new AlertDialog.Builder(this);
+            location.setTitle("No Location Data")
+                    .setMessage("Please Check if GPS is enabled")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            AlertDialog alert = location.create();
+            alert.show();
+        }
+        else {
+            if (!started) {
+                double lat = mCurrentLocation.getLatitude();
+                double lng = mCurrentLocation.getLongitude();
+                String coords = String.valueOf(lat) + "," + String.valueOf(lng);
+                boundary.add(coords);
+                loc.setText("Accuracy: " + String.valueOf(mCurrentLocation.getAccuracy()));
+                start();
+            }
         }
     }
 
@@ -113,7 +127,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
             double lng = mCurrentLocation.getLongitude();
             String coords = String.valueOf(lat) + "," + String.valueOf(lng);
             boundary.add(coords);
-            loc.setText(coords);
+            loc.setText("Accuracy: " + String.valueOf(mCurrentLocation.getAccuracy()));
             //loc.setText("Running");
             if(started) {
                 start();
@@ -149,7 +163,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 
@@ -157,6 +171,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        loc.setText("Accuracy: " + String.valueOf(mCurrentLocation.getAccuracy()));
     }
 
     @Override
