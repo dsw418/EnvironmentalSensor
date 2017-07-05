@@ -216,6 +216,12 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         mGoogleApiClient.disconnect();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        db.deleteCurrentSelections();
+    }
+
     private boolean isGooglePlayServicesAvailable() {
         int status = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         if (ConnectionResult.SUCCESS == status) {
@@ -335,19 +341,37 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                     byte[] dataread = characteristic.getValue();
                     String data = new String(dataread, Charset.forName("UTF-8"));
                     String[] values = data.split(",");
-                    int moisture = Integer.parseInt(values[0]); int sunlight = Integer.parseInt(values[1]);
-                    double temp = Double.parseDouble(values[2]); double humid = Double.parseDouble(values[3]);
-                    MeasuredData.setmoisture(moisture); MeasuredData.setsunlight(sunlight);
-                    MeasuredData.settemperature(temp); MeasuredData.sethumidity(humid);
-                    db.createMeasurementId(measurementIdentifiers);
-                    db.createSensorData(MeasuredData);
-                    Toast complete = Toast.makeText(getApplicationContext(), "Measurement Complete", Toast.LENGTH_SHORT);
-                    complete.show();
-                    received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
-                    //received_data.setText("Measurement Complete");
-                    LatLng loc = new LatLng(MeasuredData.getLat(), MeasuredData.getLng());
-                    mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                            .title("M:" + values[0] + ", S:" + values[1] + ", T:" + values[2] + ", H:" + values[3]));
+                    try {
+                        int moisture = Integer.parseInt(values[0]);
+                        int sunlight = Integer.parseInt(values[1]);
+                        double temp = Double.parseDouble(values[2]);
+                        double humid = Double.parseDouble(values[3]);
+                        MeasuredData.setmoisture(moisture);
+                        MeasuredData.setsunlight(sunlight);
+                        MeasuredData.settemperature(temp);
+                        MeasuredData.sethumidity(humid);
+                        db.createMeasurementId(measurementIdentifiers);
+                        db.createSensorData(MeasuredData);
+                        Toast complete = Toast.makeText(getApplicationContext(), "Measurement Complete", Toast.LENGTH_SHORT);
+                        complete.show();
+                        received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
+                        //received_data.setText("Measurement Complete");
+                        LatLng loc = new LatLng(MeasuredData.getLat(), MeasuredData.getLng());
+                        mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                                .title("M:" + values[0] + ", S:" + values[1] + ", T:" + values[2] + ", H:" + values[3]));
+                    } catch (IndexOutOfBoundsException|NumberFormatException ex) {
+                        received_data.setText("No Data");
+                        AlertDialog.Builder location = new AlertDialog.Builder(Measurement.this);
+                        location.setTitle("Data Measurement Failed")
+                                .setMessage("Please try measurement again")
+                                .setCancelable(false)
+                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                    }
+                                });
+                        AlertDialog alert = location.create();
+                        alert.show();
+                    }
                 }
             }, 5000);
         } else {

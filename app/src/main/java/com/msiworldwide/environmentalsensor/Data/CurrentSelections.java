@@ -5,7 +5,7 @@ public class CurrentSelections {
 
     long field_id;
     long water_id;
-    long crop_id;
+    String crop_id;
 
     public CurrentSelections() {}
 
@@ -18,7 +18,7 @@ public class CurrentSelections {
         this.water_id = WaterId;
     }
 
-    public void setCrop_id(long CropId) {
+    public void setCrop_id(String CropId) {
         this.crop_id = CropId;
     }
 
@@ -31,7 +31,7 @@ public class CurrentSelections {
         return this.water_id;
     }
 
-    public long getCrop_id() {
+    public String getCrop_id() {
         return this.crop_id;
     }
 }

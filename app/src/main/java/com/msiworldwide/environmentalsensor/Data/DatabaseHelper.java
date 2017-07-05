@@ -70,7 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "(" + KEY_WaterSourceId + " TEXT PRIMARY KEY," + KEY_Coordinates + " TEXT" + ")";
 
     private static final String CREATE_TABLE_CurrentSelections = "CREATE TABLE " + TABLE_CURRENT_SELECTIONS +
-            "(" + KEY_FieldId + " INTEGER," + KEY_WaterSourceId + " INTEGER," + KEY_CropId + " INTEGER" + ")";
+            "(" + KEY_FieldId + " INTEGER," + KEY_WaterSourceId + " INTEGER," + KEY_CropId + " TEXT" + ")";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -558,7 +558,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         CurrentSelections cs = new CurrentSelections();
         cs.setField_id(c.getLong(c.getColumnIndex(KEY_FieldId)));
         cs.setWater_id(c.getLong(c.getColumnIndex(KEY_WaterSourceId)));
-        cs.setCrop_id(c.getLong(c.getColumnIndex(KEY_CropId)));
+        cs.setCrop_id(c.getString(c.getColumnIndex(KEY_CropId)));
 
 
         return cs;

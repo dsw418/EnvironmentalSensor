@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final int kActivityRequestCode_ConnectedActivity = 3;
     private static final int NewFieldRequestCode = 4;
     private static final int NewWaterSourceRequestCode = 5;
+    private static final int CropSelectRequestCode = 6;
 
     // Data
     private BleManager mBleManager;
@@ -206,7 +207,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         if (currentSelections.getField_id() !=0) {
             db.createCurrentSelections(currentSelections);
-            Intent intent = new Intent(this, MeasurementLocations.class);
+            //Intent intent = new Intent(this, MeasurementLocations.class);
+            Intent intent = new Intent(this, Measurement.class);
             startActivity(intent);
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -248,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case R.id.Crop_Select:
                 if (position == 1) {
                     Intent intent = new Intent(this, CropDatabase.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, CropSelectRequestCode);
                 } else if(position > 1) {
 
                 }
@@ -528,6 +530,29 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 waterAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 water_source_spinner.setAdapter(waterAdapter);
                 water_source_spinner.setOnItemSelectedListener(this);
+            }
+        } else if (requestCode == CropSelectRequestCode) {
+            if (resultCode == Activity.RESULT_OK) {
+                String selectedCrop = data.getStringExtra("result");
+                currentSelections.setCrop_id(selectedCrop);
+                if(!cropString.contains(selectedCrop)) {
+                    cropString.add(selectedCrop);
+                }
+                ArrayAdapter<String> cropAdapter = new ArrayAdapter<>(MainActivity.this,
+                        android.R.layout.simple_spinner_item,cropString);
+
+                cropAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                crop_spinner.setAdapter(cropAdapter);
+                crop_spinner.setOnItemSelectedListener(this);
+                crop_spinner.setSelection(cropAdapter.getPosition(selectedCrop));
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                ArrayAdapter<String> cropAdapter = new ArrayAdapter<>(MainActivity.this,
+                        android.R.layout.simple_spinner_item,cropString);
+
+                cropAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                crop_spinner.setAdapter(cropAdapter);
+                crop_spinner.setOnItemSelectedListener(this);
             }
         }
     }
