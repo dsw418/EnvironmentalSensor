@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private BleManager mBleManager;
     private boolean mIsScanPaused = true;
     private BleDevicesScanner mScanner;
+    private BluetoothDevice device;
+    private String deviceAddress;
+    private BluetoothAdapter adapter;
 
     private ArrayList<BluetoothDeviceData> mScannedDevices;
     private BluetoothDeviceData mSelectedDeviceData;
@@ -88,6 +91,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private ArrayList<String> cropString = new ArrayList<>(Arrays.asList("Crop","Database"));
     private Spinner devices_spinner;
     private ArrayList<String> devString = new ArrayList<>(Arrays.asList("Select Device","Refresh"));
+    private ArrayAdapter<String> devadapter;
+    private String devName;
+
 
     DatabaseHelper db;
 
@@ -188,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         // Spinner Drop Down for Device Selection
         devices_spinner = (Spinner)findViewById(R.id.Device_Select);
-        ArrayAdapter<String> devadapter = new ArrayAdapter<>(MainActivity.this,
+        devadapter = new ArrayAdapter<>(MainActivity.this,
                 android.R.layout.simple_spinner_item,devString);
 
         devadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -197,6 +203,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         connectionStatus = (TextView) findViewById(R.id.connection);
 
+        adapter = BluetoothAdapter.getDefaultAdapter();
+
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
@@ -205,12 +214,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void openMeasurementLocations(View view){
 
-        if (currentSelections.getField_id() !=0) {
-            db.createCurrentSelections(currentSelections);
-            //Intent intent = new Intent(this, MeasurementLocations.class);
-            Intent intent = new Intent(this, Measurement.class);
-            startActivity(intent);
-        } else {
+        if (currentSelections.getField_id() ==0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("No Field Selected")
                     .setMessage("Please Select a Field")
@@ -221,6 +225,33 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     });
             AlertDialog alert = builder.create();
             alert.show();
+        } else if (currentSelections.getCrop_id() == null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("No Crop Selected")
+                    .setMessage("Please Select a Crop")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        } else if (!connected) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("No Device Connected")
+                    .setMessage("Please Connect to a Device")
+                    .setCancelable(false)
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        } else {
+            db.createCurrentSelections(currentSelections);
+            //Intent intent = new Intent(this, MeasurementLocations.class);
+            Intent intent = new Intent(this, Measurement.class);
+            startActivity(intent);
         }
     }
 
@@ -283,14 +314,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 } else if (position > 1) {
                     stopScanning();
                     int index = position - 2;
-                    if (mScannedDevices.size() > 0) {
+                    if (mScannedDevices.size() > index) {
                         mSelectedDeviceData = mScannedDevices.get(index);
-                        BluetoothDevice device = mSelectedDeviceData.device;
-                        mBleManager.setBleListener(MainActivity.this);
-                        connect(device);
+                        if (!connected || !devName.equals(mSelectedDeviceData.getNiceName())) {
+                            device = mSelectedDeviceData.device;
+                            deviceAddress = device.getAddress();
+                            mBleManager.setBleListener(MainActivity.this);
+                            devName = mSelectedDeviceData.getNiceName();
+                            connect(device);
+                        }
 
                     }
-
                 }
                 break;
 
@@ -305,7 +339,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onResume() {
         super.onResume();
-
         // Set listener
         mBleManager.setBleListener(this);
 
@@ -324,7 +357,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onDestroy() {
         db.deleteCurrentSelections();
         db.close();
+        mBleManager.disconnect();
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        mBleManager.disconnect();
+    }
+
+    @Override
+    public void onStop() {
+        //mBleManager.disconnect();
+        super.onStop();
     }
 
     private void autostartScan() {
@@ -363,6 +409,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             connectionStatus.setText("Connected");
             connected = true;
         }*/
+
     }
 
     @Override
@@ -864,15 +911,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            BluetoothDevice newdevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //Device found
+                if (!connected) {
+                    if (newdevice != null) {
+                        // Check if the found device is one we had comm with
+                        if (newdevice.getAddress().equals(device.getAddress()) == true)
+                            connect(device);
+                    }
+                }
             }
             else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //Device is now connected
                 connectionStatus.setText("Connected");
+                devices_spinner.setSelection(devadapter.getPosition(devName), false);
                 connected = true;
+                adapter.cancelDiscovery();
             }
             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //Done searching
@@ -883,7 +939,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 //Device has disconnected
                 connectionStatus.setText("No Bluetooth Connection");
+                devices_spinner.setSelection(0, false);
                 connected = false;
+                adapter.startDiscovery();
             }
         }
     };

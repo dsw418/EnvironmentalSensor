@@ -88,9 +88,11 @@
             android:id="@+id/add_source"
             android:layout_width="179dp"
             android:layout_height="66dp"
-            android:background="#5B9BD5"
+            android:background="#009933"
             android:onClick="addSource"
-            android:text="Add Source"
+            android:drawableLeft="@mipmap/plus"
+            android:paddingLeft="20dp"
+            android:text="More"
             android:textSize="18sp" />
 
         <View

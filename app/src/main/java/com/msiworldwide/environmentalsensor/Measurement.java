@@ -1,11 +1,16 @@
 package com.msiworldwide.environmentalsensor;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Handler;
@@ -16,7 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+//import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -51,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 public class Measurement extends AppCompatActivity implements OnMapReadyCallback,
@@ -66,7 +72,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     Button BtnMeasurement;
     Button BtnVisualize;
     //TextView tvLocation;
-    TextView received_data;
+    //TextView received_data;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mCurrentLocation;
@@ -76,6 +82,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
 
     CurrentSelections currentSelections = new CurrentSelections();
     long Field_id;
+    String FieldName;
     FieldData fieldData = new FieldData();
     String field_coords_str;
     String[] field_coords_array;
@@ -86,6 +93,12 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     LatLng mSouthwest;
 
     int measurement_id;
+    IntentFilter filter = new IntentFilter();
+    boolean connected = true;
+    BluetoothDevice device;
+    String deviceAddress;
+    AlertDialog lostcon;
+    BluetoothAdapter adapter;
 
     DatabaseHelper db;
 
@@ -142,7 +155,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         mUartService = mBleManager.getGattService(UUID_SERVICE);
         enableRxNotifications();
         //tvLocation = (TextView) findViewById(R.id.tvLocation);
-        received_data = (TextView) findViewById(R.id.received_data);
+        //received_data = (TextView) findViewById(R.id.received_data);
         BtnVisualize = (Button) findViewById(R.id.visualize);
         BtnMeasurement = (Button) findViewById(R.id.take_measurement);
         BtnMeasurement.setOnClickListener(new View.OnClickListener(){
@@ -178,7 +191,8 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         currentSelections = db.getCurrentSelections();
         Field_id = currentSelections.getField_id();
         fieldData = db.getFieldData(Field_id);
-        measurementIdentifiers.setFieldId(fieldData.getFieldId());
+        FieldName = fieldData.getFieldId();
+        measurementIdentifiers.setFieldId(FieldName);
         MeasuredData.setFieldId(fieldData.getFieldId());
         field_coords_str = fieldData.getCoordinates();
         field_coords_array = field_coords_str.split(",");
@@ -191,17 +205,27 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
             boundary.add(point);
         }
 
-        measurement_id = db.getNewIdentifier();
-        measurementIdentifiers.setMeasurementNumberId(measurement_id);
-        MeasuredData.setMeasurementNumberId(measurement_id);
-        received_data.setText(String.valueOf(measurement_id));
+        adapter = BluetoothAdapter.getDefaultAdapter();
+        device = mBleManager.getConnectedDevice();
+        deviceAddress = device.getAddress();
 
+        //received_data.setText(String.valueOf(measurement_id));
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        this.registerReceiver(mReceiver, filter);
 
     }
 
     public void openVisualizeResults(View view){
         Intent intent = new Intent(this, VisualizeResults.class);
         startActivity(intent);
+    }
+
+    public void save_measurement(View view) {
+        Toast save = Toast.makeText(getApplicationContext(), "Measurements Saved", Toast.LENGTH_SHORT);
+        save.show();
     }
 
     @Override
@@ -220,6 +244,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     public void onBackPressed() {
         super.onBackPressed();
         db.deleteCurrentSelections();
+        //this.unregisterReceiver(mReceiver);
     }
 
     private boolean isGooglePlayServicesAvailable() {
@@ -249,6 +274,46 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
             LatLngBounds field_bound = new LatLngBounds(mSouthwest,mNortheast);
             mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(field_bound,0));
         }
+
+        final String date = DateFormat.getDateInstance().format(new Date());
+        if (db.checkSensorData(FieldName,date)) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Previous Data Exists")
+                    .setMessage("Would you like to continue previous measurements?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            List<SensorData> sensorDatas = db.getAllSensorDatabyDate(FieldName,date);
+                            measurement_id = sensorDatas.get(sensorDatas.size()-1).getMeasurement_number_id();
+                            measurementIdentifiers.setMeasurementNumberId(measurement_id);
+                            MeasuredData.setMeasurementNumberId(measurement_id);
+                            for (int i = 0; i < sensorDatas.size(); i++) {
+                                SensorData loadedData = sensorDatas.get(i);
+                                if (loadedData.getMeasurement_number_id() == measurement_id) {
+                                    LatLng loc = new LatLng(loadedData.getLat(), loadedData.getLng());
+                                    mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                                            .title("M:" + loadedData.getmoisture() + ", S:" + loadedData.getsunlight()
+                                                    + ", T:" + loadedData.gettemperature() + ", H:" + loadedData.gethumidity()));
+                                }
+                            }
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            measurement_id = db.getNewIdentifier();
+                            measurementIdentifiers.setMeasurementNumberId(measurement_id);
+                            MeasuredData.setMeasurementNumberId(measurement_id);
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+        } else {
+            measurement_id = db.getNewIdentifier();
+            measurementIdentifiers.setMeasurementNumberId(measurement_id);
+            MeasuredData.setMeasurementNumberId(measurement_id);
+        }
     }
 
     protected void startLocationUpdates() {
@@ -275,6 +340,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     @Override
     protected void onPause() {
         super.onPause();
+        //unregisterReceiver(mReceiver);
         stopLocationUpdates();
     }
 
@@ -296,6 +362,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         }
         mBleManager = BleManager.getInstance(this);
         mBleManager.setBleListener(this);
+        registerReceiver(mReceiver,filter);
     }
 
 
@@ -332,48 +399,76 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                 final byte[] chunk = Arrays.copyOfRange(data, i, Math.min(i + kTxMaxCharacters, data.length));
                 mBleManager.writeService(mUartService, UUID_TX, chunk);
             }
-            received_data.setText("Measuring...");
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    BluetoothGattCharacteristic characteristic = mUartService.getCharacteristic(UUID.fromString(UUID_RX));
-                    byte[] dataread = characteristic.getValue();
-                    String data = new String(dataread, Charset.forName("UTF-8"));
-                    String[] values = data.split(",");
-                    try {
-                        int moisture = Integer.parseInt(values[0]);
-                        int sunlight = Integer.parseInt(values[1]);
-                        double temp = Double.parseDouble(values[2]);
-                        double humid = Double.parseDouble(values[3]);
-                        MeasuredData.setmoisture(moisture);
-                        MeasuredData.setsunlight(sunlight);
-                        MeasuredData.settemperature(temp);
-                        MeasuredData.sethumidity(humid);
-                        db.createMeasurementId(measurementIdentifiers);
-                        db.createSensorData(MeasuredData);
-                        Toast complete = Toast.makeText(getApplicationContext(), "Measurement Complete", Toast.LENGTH_SHORT);
-                        complete.show();
-                        received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
-                        //received_data.setText("Measurement Complete");
-                        LatLng loc = new LatLng(MeasuredData.getLat(), MeasuredData.getLng());
-                        mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-                                .title("M:" + values[0] + ", S:" + values[1] + ", T:" + values[2] + ", H:" + values[3]));
-                    } catch (IndexOutOfBoundsException|NumberFormatException ex) {
-                        received_data.setText("No Data");
-                        AlertDialog.Builder location = new AlertDialog.Builder(Measurement.this);
-                        location.setTitle("Data Measurement Failed")
-                                .setMessage("Please try measurement again")
-                                .setCancelable(false)
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                    }
-                                });
-                        AlertDialog alert = location.create();
-                        alert.show();
+            if (connected) {
+                //received_data.setText("Measuring...");
+                Toast measuring = Toast.makeText(getApplicationContext(), "Measuring...", Toast.LENGTH_LONG);
+                measuring.show();
+                final Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        BluetoothGattCharacteristic characteristic = mUartService.getCharacteristic(UUID.fromString(UUID_RX));
+                        byte[] dataread = characteristic.getValue();
+                        if (dataread != null) {
+                            String data = new String(dataread, Charset.forName("UTF-8"));
+                            String[] values = data.split(",");
+                            try {
+                                int moisture = Integer.parseInt(values[0]);
+                                int sunlight = Integer.parseInt(values[1]);
+                                double temp = Double.parseDouble(values[2]);
+                                double humid = Double.parseDouble(values[3]);
+                                MeasuredData.setmoisture(moisture);
+                                MeasuredData.setsunlight(sunlight);
+                                MeasuredData.settemperature(temp);
+                                MeasuredData.sethumidity(humid);
+                                db.createMeasurementId(measurementIdentifiers);
+                                db.createSensorData(MeasuredData);
+                                Toast complete = Toast.makeText(getApplicationContext(), "Measurement Complete", Toast.LENGTH_SHORT);
+                                complete.show();
+                                //received_data.setText("M:" + values[0] + "S:" + values[1] + "T:" + values[2] + "H:" + values[3]);
+                                //received_data.setText("Measurement Complete");
+                                LatLng loc = new LatLng(MeasuredData.getLat(), MeasuredData.getLng());
+                                mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                                        .title("M:" + values[0] + ", S:" + values[1] + ", T:" + values[2] + ", H:" + values[3]));
+                            } catch (IndexOutOfBoundsException | NumberFormatException ex) {
+                                //received_data.setText("No Data");
+                                AlertDialog.Builder location = new AlertDialog.Builder(Measurement.this);
+                                location.setTitle("Data Measurement Failed")
+                                        .setMessage("Please try measurement again")
+                                        .setCancelable(false)
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                            }
+                                        });
+                                AlertDialog alert = location.create();
+                                alert.show();
+                            }
+                        } else {
+                            AlertDialog.Builder location = new AlertDialog.Builder(Measurement.this);
+                            location.setTitle("Data Read Failed")
+                                    .setMessage("Please try measurement again")
+                                    .setCancelable(false)
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                        }
+                                    });
+                            AlertDialog alert = location.create();
+                            alert.show();
+                        }
                     }
-                }
-            }, 5000);
+                }, 5000);
+            }else {
+                AlertDialog.Builder location = new AlertDialog.Builder(Measurement.this);
+                location.setTitle("Device Disconnected")
+                        .setMessage("Please connect to a sensor")
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                            }
+                        });
+                AlertDialog alert = location.create();
+                alert.show();
+            }
         } else {
             Log.w(TAG, "Uart Service not discovered. Unable to send data");
             AlertDialog.Builder location = new AlertDialog.Builder(this);
@@ -454,5 +549,68 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     protected void enableRxNotifications() {
         isRxNotificationEnabled = true;
         mBleManager.enableNotification(mUartService, UUID_RX, true);
+    }
+
+    //The BroadcastReceiver that listens for bluetooth broadcasts
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            //BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                if (!connected) {
+                    BluetoothDevice newdevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (newdevice != null && deviceAddress != null) {
+                        // Check if the found device is one we had comm with
+                        if (newdevice.getAddress().equals(deviceAddress) == true)
+                            connect(deviceAddress);
+                    }
+                }
+            }
+            else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                //Device is now connected
+                lostcon.cancel();
+                adapter.cancelDiscovery();
+                connected = true;
+                AlertDialog.Builder connection = new AlertDialog.Builder(Measurement.this);
+                connection.setTitle("Bluetooth Connection Recovered")
+                        .setMessage("Continue with Measurements")
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                            }
+                        });
+                AlertDialog alert = connection.create();
+                alert.show();
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+                //Done searching
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
+                //Device is about to disconnect
+            }
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                //Device has disconnected
+                connected = false;
+                AlertDialog.Builder lostconnection = new AlertDialog.Builder(Measurement.this);
+                lostconnection.setTitle("Bluetooth Connection Lost")
+                        .setMessage("Attempting to reconnect")
+                        .setCancelable(false)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                            }
+                        });
+                lostcon = lostconnection.create();
+                lostcon.show();
+                adapter.startDiscovery();
+
+                //connect(device);
+            }
+        }
+    };
+
+    private void connect(String deviceAddress) {
+        boolean isConnecting = mBleManager.connect(this, deviceAddress);
     }
 }

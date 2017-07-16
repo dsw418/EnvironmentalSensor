@@ -253,6 +253,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return sensorDatas;
     }
 
+    public boolean checkSensorData(String fieldName, String date) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT  * FROM " + TABLE_SENSOR_DATA + " WHERE "
+                + KEY_FieldId + " = " + "'" + fieldName + "' AND "
+                + KEY_Date + " = " + "'" + date + "'";
+        Cursor cursor = db.rawQuery(selectQuery, null);
+        if(cursor.getCount() <= 0){
+            cursor.close();
+            return false;
+        }
+        cursor.close();
+        return true;
+    }
+
     // Deleting SensorData
     public void deleteSensorData(long SensorData_id) {
         SQLiteDatabase db = this.getWritableDatabase();

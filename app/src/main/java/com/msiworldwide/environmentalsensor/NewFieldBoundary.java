@@ -15,6 +15,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -33,7 +34,7 @@ import java.util.Date;
 public class NewFieldBoundary extends AppCompatActivity implements LocationListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    private static final long INTERVAL = 1000*5;
+    private static final long INTERVAL = 1000*2;
     private static final long FASTEST_INTERVAL = 1000;
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
@@ -92,6 +93,8 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
         }
         else {
             if (!started) {
+                Toast begin = Toast.makeText(getApplicationContext(), "Begin Walking", Toast.LENGTH_SHORT);
+                begin.show();
                 double lat = mCurrentLocation.getLatitude();
                 double lng = mCurrentLocation.getLongitude();
                 String coords = String.valueOf(lat) + "," + String.valueOf(lng);
@@ -116,6 +119,8 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
         handler.removeCallbacks(runnable);
         boundaryCoordsList = TextUtils.join(",", boundary);
         fieldData.setCoordinates(boundaryCoordsList);
+        Toast end = Toast.makeText(getApplicationContext(), "Measurement Finished", Toast.LENGTH_SHORT);
+        end.show();
         //loc.setText(boundaryCoordsList);
         //loc.setText("Stopped");
     }
@@ -123,13 +128,34 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
+            if (mCurrentLocation.getAccuracy() < 20) {
+                double lat = mCurrentLocation.getLatitude();
+                double lng = mCurrentLocation.getLongitude();
+                String coords = String.valueOf(lat) + "," + String.valueOf(lng);
+                boundary.add(coords);
+                loc.setText("Accuracy: " + String.valueOf(mCurrentLocation.getAccuracy()));
+                //loc.setText("Running");
+                if (started) {
+                    start();
+                }
+            } else {
+                handler.postDelayed(secondcheck,2000);
+            }
+        }
+    };
+
+    private Runnable secondcheck = new Runnable() {
+        @Override
+        public void run() {
             double lat = mCurrentLocation.getLatitude();
             double lng = mCurrentLocation.getLongitude();
             String coords = String.valueOf(lat) + "," + String.valueOf(lng);
-            boundary.add(coords);
+            if (mCurrentLocation.getAccuracy() < 20) {
+                boundary.add(coords);
+            }
             loc.setText("Accuracy: " + String.valueOf(mCurrentLocation.getAccuracy()));
             //loc.setText("Running");
-            if(started) {
+            if (started) {
                 start();
             }
         }

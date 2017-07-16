@@ -12,13 +12,16 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.TileOverlay;
@@ -53,9 +56,13 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
     ArrayList<LatLng> boundary = new ArrayList<>();
     ArrayList<Double> lats = new ArrayList<>();
     ArrayList<Double> lngs = new ArrayList<>();
+    ArrayList<Double> moisturelist = new ArrayList<>();
     LatLng mNortheast;
     LatLng mSouthwest;
     int measurement_id;
+    double maxmoisture;
+    double minmoisture;
+    TileOverlay mOverlay = null;
 
     private Spinner date_spinner;
     private ArrayList<String> dateString = new ArrayList<>(Arrays.asList("Select Date"));
@@ -186,6 +193,10 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void addHeatMap(List<SensorData> DataList) {
+        if (mOverlay != null) {
+            mOverlay.remove();
+        }
+
         //ArrayList<LatLng> points = new ArrayList<>();
         ArrayList<WeightedLatLng> data = new ArrayList<>();
         for(int i = 0; i<DataList.size();i++) {
@@ -194,16 +205,124 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             double lng = sensorData.getLng();
             int moisture = sensorData.getmoisture();
             data.add(new WeightedLatLng(new LatLng(lat,lng),(double)moisture));
+            moisturelist.add((double)moisture);
             //points.add(new LatLng(lat,lng));
+            LatLng loc = new LatLng(lat, lng);
+            int sunlight = sensorData.getsunlight();
+            double temp = sensorData.gettemperature();
+            double hum = sensorData.gethumidity();
+            mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromResource(R.mipmap.circle_marker))
+                    .title("M:" + String.valueOf(moisture) + ", S:" + String.valueOf(sunlight) + ", T:" + String.valueOf(temp) + ", H:" + String.valueOf(hum)));
         }
-
-        data.add(new WeightedLatLng(new LatLng(-90,0),100));
-        data.add(new WeightedLatLng(new LatLng(-90,0),0));
+        //data.add(new WeightedLatLng(new LatLng(-90,0),100));
+        //data.add(new WeightedLatLng(new LatLng(-90,0),0));
 
         /*Toast complete = Toast.makeText(getApplicationContext(), String.valueOf(data), Toast.LENGTH_SHORT);
         complete.show();*/
 
-        // Gradient
+        // Create a heat map tile provider
+        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder().weightedData(data).build();
+        mProvider.setOpacity(0.6);
+        mProvider.setRadius(50);
+
+        maxmoisture = Collections.max(moisturelist);
+        minmoisture = Collections.min(moisturelist);
+
+        if (maxmoisture < 20) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(0,0,0),      //black
+                    Color.rgb(255,0,0)     //red
+            };
+            float[] startPoints = {
+                    0.01f, 1f
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        }else if (maxmoisture < 35) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(255,0,0),     //red
+                    Color.rgb(255,255,0)    // yellow
+            };
+            float[] startPoints = {
+                    15f/(float)maxmoisture, 1f
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        } else if (minmoisture < 35 && maxmoisture < 55) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(255,0,0),     //red
+                    Color.rgb(102,225,0)   // green
+            };
+            float[] startPoints = {
+                    15f/(float)maxmoisture, 40f/(float)maxmoisture
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        }else if (maxmoisture > 55 && minmoisture < 35) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(255,0,0),     //red
+                    Color.rgb(102,225,0),   // green
+                    Color.rgb(0,0,255)      // blue
+            };
+            float[] startPoints = {
+                    15f/(float)maxmoisture, 40f/(float)maxmoisture, 1f
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        }else if (minmoisture > 35 && minmoisture < 55 && maxmoisture > 35 && minmoisture < 55) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(102,225,0),   // green
+                    Color.rgb(102,225,0)    // green
+            };
+            float[] startPoints = {
+                    40f/(float)maxmoisture, 1f
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        } else if (minmoisture < 55 && maxmoisture > 55) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(102,225,0),   // green
+                    Color.rgb(0,0,255)      // blue
+            };
+            float[] startPoints = {
+                    40f/(float)maxmoisture, 55f/(float)maxmoisture
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        } else if (minmoisture > 60) {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(0,255,255),   // cyan
+                    Color.rgb(51,51,255),
+                    Color.rgb(0,0,255)      // blue
+            };
+            float[] startPoints = {
+                    60f/(float)maxmoisture, 65f/(float)maxmoisture, 1f
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        }else {
+            // Gradient
+            int[] colors = {
+                    Color.rgb(102,225,0),   // green
+                    Color.rgb(0,255,255),   // cyan
+                    Color.rgb(0,0,255)      // blue
+            };
+            float[] startPoints = {
+                    40f/(float)maxmoisture, 55f/(float)maxmoisture, 60f/(float)maxmoisture
+            };
+            Gradient gradient = new Gradient(colors,startPoints);
+            mProvider.setGradient(gradient);
+        }
+
+
+/*        // Gradient
         int[] colors = {
                 Color.rgb(255,0,0),     //red
                 Color.rgb(102,225,0),   // green
@@ -211,15 +330,16 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
         };
 
         float[] startPoints = {
-                0.1f, 0.5f, 1f
-        };
+                0.01f, 0.5f, 1f
+        };*/
 
-        Gradient gradient = new Gradient(colors,startPoints);
+        //Gradient gradient = new Gradient(colors,startPoints);
 
-        // Create a heat map tile provider
-        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder().weightedData(data).radius(30).gradient(gradient).build();
+/*        // Create a heat map tile provider
+        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder().weightedData(data).build();
         mProvider.setOpacity(0.6);
+        mProvider.setRadius(30);*/
         // Add a tile overlay to the map
-        TileOverlay mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+        mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
     }
 }

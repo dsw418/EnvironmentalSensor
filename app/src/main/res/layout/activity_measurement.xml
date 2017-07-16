@@ -36,7 +36,7 @@
         <Button
             android:id="@+id/take_measurement"
             android:layout_width="214dp"
-            android:layout_height="66dp"
+            android:layout_height="50dp"
             android:text="Measure" />
 
         <View
@@ -44,11 +44,13 @@
             android:layout_height="10dp"
             android:layout_weight="1"/>
 
-        <TextView
-            android:id="@+id/received_data"
-            android:layout_width="233dp"
-            android:layout_height="22dp"
-            android:gravity="center" />
+        <Button
+            android:id="@+id/save_measurement"
+            android:layout_width="214dp"
+            android:layout_height="50dp"
+            android:background="#C5E0B4"
+            android:onClick="save_measurement"
+            android:text="Save Measurements" />
 
         <View
             android:layout_width="0dp"
@@ -58,7 +60,8 @@
         <Button
             android:id="@+id/visualize"
             android:layout_width="219dp"
-            android:layout_height="64dp"
+            android:layout_height="50dp"
+            android:background="#5B9BD5"
             android:onClick="openVisualizeResults"
             android:text="Visualize" />
 

@@ -54,6 +54,14 @@
             android:gravity="center"
             android:src="@mipmap/drop" />
 
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:text="1"
+            android:textSize="24sp" />
+
     </LinearLayout>
 
         <View
@@ -90,6 +98,13 @@
             android:gravity="center"
             android:src="@mipmap/drop" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:text="2"
+            android:textSize="24sp" />
+
     </LinearLayout>
 
         <View
@@ -124,6 +139,13 @@
             android:layout_marginStart="-44dp"
             android:gravity="center"
             android:src="@mipmap/drop" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:text="3"
+            android:textSize="24sp" />
     </LinearLayout>
 
         <View
@@ -158,6 +180,13 @@
             android:layout_marginStart="-44dp"
             android:gravity="center"
             android:src="@mipmap/drop" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:text="4"
+            android:textSize="24sp" />
     </LinearLayout>
 
         <View
