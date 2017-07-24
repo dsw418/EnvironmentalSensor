@@ -209,6 +209,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         this.registerReceiver(mReceiver, filter);
         }
 
@@ -342,9 +343,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Set listener
         mBleManager.setBleListener(this);
 
-        // Autostart scan
-        autostartScan();
         registerReceiver(mReceiver,filter);
+        mBleManager.disconnect();
+        if (connected) {
+            connected = false;
+            connectionStatus.setText("No Bluetooth Connection");
+        }
+        adapter.startDiscovery();
     }
 
     @Override
@@ -373,19 +378,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onStop();
     }
 
-    private void autostartScan() {
-        if (BleUtils.getBleStatus(this) == BleUtils.STATUS_BLE_ENABLED) {
-            // If was connected, disconnect
-            mBleManager.disconnect();
-
-            // Force restart scanning
-            if (mScannedDevices != null) {      // Fixed a weird bug when resuming the app (this was null on very rare occasions even if it should not be)
-                mScannedDevices.clear();
-            }
-            startScan(null);
-        }
-    }
-
     // region BleManagerListener
     @Override
     public void onConnected() {
@@ -398,18 +390,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onDisconnected() {
         Log.d(TAG, "MainActivity onDisconnected");
-        //showConnectionStatus(false);
-        /*connectionStatus.setText("No Bluetooth Connection");
-        connected = false;*/
     }
 
     private void connect(BluetoothDevice device) {
         boolean isConnecting = mBleManager.connect(this, device.getAddress());
-        /*if (isConnecting) {
-            connectionStatus.setText("Connected");
-            connected = true;
-        }*/
-
     }
 
     @Override
@@ -916,37 +900,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 //Device found
                 if (!connected) {
-                    if (newdevice != null) {
+                    if (newdevice != null && device != null) {
                         // Check if the found device is one we had comm with
                         if (newdevice.getAddress().equals(device.getAddress()) == true)
                             connect(device);
                     }
                 }
-            }
-            else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+            } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //Device is now connected
                 connectionStatus.setText("Connected");
                 devices_spinner.setSelection(devadapter.getPosition(devName), false);
                 connected = true;
                 adapter.cancelDiscovery();
-            }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //Done searching
-            }
-            else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
+            } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
                 //Device is about to disconnect
-            }
-            else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+            } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 //Device has disconnected
                 connectionStatus.setText("No Bluetooth Connection");
                 devices_spinner.setSelection(0, false);
                 connected = false;
                 adapter.startDiscovery();
+            } else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+                final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+
+                switch (state) {
+                    case BluetoothAdapter.STATE_OFF:
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_OFF:
+                        break;
+                    case BluetoothAdapter.STATE_ON:
+                        adapter.startDiscovery();
+                        break;
+                    case BluetoothAdapter.STATE_TURNING_ON:
+                        break;
+                }
             }
         }
     };
 
 }
-
-
-
