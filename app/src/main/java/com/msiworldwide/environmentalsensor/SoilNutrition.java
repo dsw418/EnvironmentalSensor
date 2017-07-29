@@ -30,7 +30,9 @@ public class SoilNutrition extends AppCompatActivity implements OnMapReadyCallba
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Soil Nutrition");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Soil Nutrition");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
 
         db = new DatabaseHelper(getApplicationContext());

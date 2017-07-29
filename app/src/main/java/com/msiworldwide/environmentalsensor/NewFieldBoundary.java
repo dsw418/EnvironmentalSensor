@@ -1,11 +1,15 @@
 package com.msiworldwide.environmentalsensor;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -19,8 +23,8 @@ import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
+//import com.google.android.gms.common.api.PendingResult;
+//import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -66,7 +70,9 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("New Field Boundary");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("New Field Boundary");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
 
         createLocationRequest();
@@ -179,8 +185,32 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
     }
 
     protected void startLocationUpdates() {
-        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi
-                .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        try {
+            /*PendingResult<Status> pendingResult = LocationServices.FusedLocationApi
+                    .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);*/
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        } catch(SecurityException e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                    this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED) {
+                requestLocationPermissions();
+            }
+        }
+    }
+
+    // region Permissions
+    @TargetApi(Build.VERSION_CODES.M)
+    private void requestLocationPermissions() {
+        // Android M Permission check
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("This app needs location access");
+        builder.setMessage("Please grant location access so this app can use the GPS");
+        builder.setPositiveButton(android.R.string.ok, null);
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            public void onDismiss(DialogInterface dialog) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        });
+        builder.show();
     }
 
     @Override
@@ -212,9 +242,9 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
         super.onDestroy();
     }
 
-    protected void stopLocationUpdates() {
+/*    protected void stopLocationUpdates() {
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
+    }*/
 
     @Override
     public void onResume() {

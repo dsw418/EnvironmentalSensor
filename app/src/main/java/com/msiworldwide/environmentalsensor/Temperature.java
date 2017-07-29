@@ -18,7 +18,9 @@ public class Temperature extends AppCompatActivity {
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Temperature");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Temperature");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
     }
 

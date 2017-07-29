@@ -1,5 +1,7 @@
 package com.msiworldwide.environmentalsensor;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -11,8 +13,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -27,8 +31,8 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.Status;
+//import com.google.android.gms.common.api.PendingResult;
+//import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -41,7 +45,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import com.google.android.gms.maps.model.Polygon;
+//import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.msiworldwide.environmentalsensor.Data.CurrentSelections;
 import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
@@ -109,8 +113,6 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     public static final String UUID_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
     public static final String UUID_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
     public static final int kTxMaxCharacters = 20;
-    private boolean isRxNotificationEnabled = false;
-
 
     // Data
     protected BleManager mBleManager;
@@ -131,7 +133,9 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Measurement");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Measurement");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
 
         db = new DatabaseHelper(getApplicationContext());
@@ -262,6 +266,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         try {
             this.unregisterReceiver(mReceiver);
         } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Unregister: " + e.toString());
         }
     }
 
@@ -278,13 +283,19 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onConnected(Bundle bundle) {
         startLocationUpdates();
-        mMap.setMyLocationEnabled(true);
+        try {
+            mMap.setMyLocationEnabled(true);
+        }
+        catch(SecurityException e){
+            Log.e(TAG, "Location Exception");
+        }
         if (!boundary.isEmpty()) {
             PolygonOptions opts = new PolygonOptions();
             for (LatLng location : boundary) {
                 opts.add(location);
             }
-            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED));
+            //Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED));
+            mMap.addPolygon(opts.strokeColor(Color.RED));
             Collections.sort(lats);
             Collections.sort(lngs);
             mNortheast = new LatLng(lats.get(lats.size() - 1), lngs.get(lngs.size() - 1));
@@ -339,8 +350,41 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     }
 
     protected void startLocationUpdates() {
-        PendingResult<Status> pendingResult = LocationServices.FusedLocationApi
-                .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        try {
+            /*PendingResult<Status> pendingResult = LocationServices.FusedLocationApi
+                    .requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);*/
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        } catch(SecurityException e) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                    this.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED) {
+                requestLocationPermissions();
+            }
+        }
+    }
+
+    // region Permissions
+    @TargetApi(Build.VERSION_CODES.M)
+    private void requestLocationPermissions() {
+        // Android M Permission check
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("This app needs location access");
+        builder.setMessage("Please grant location access so this app can use the GPS");
+        builder.setPositiveButton(android.R.string.ok, null);
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            public void onDismiss(DialogInterface dialog) {
+                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            }
+        });
+        builder.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startLocationUpdates();
+            }
+        }
     }
 
     @Override
@@ -526,7 +570,6 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     }
 
     protected void enableRxNotifications() {
-        isRxNotificationEnabled = true;
         mBleManager.enableNotification(mUartService, UUID_RX, true);
     }
 
@@ -542,7 +585,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                     BluetoothDevice newdevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     if (newdevice != null && deviceAddress != null) {
                         // Check if the found device is one we had comm with
-                        if (newdevice.getAddress().equals(deviceAddress) == true)
+                        if (newdevice.getAddress().equals(deviceAddress))
                             connect(deviceAddress);
                     }
                 }
@@ -563,12 +606,12 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                 AlertDialog alert = connection.create();
                 alert.show();
             }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+            /*else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //Done searching
             }
             else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
                 //Device is about to disconnect
-            }
+            }*/
             else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 //Device has disconnected
                 connected = false;
@@ -590,6 +633,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     };
 
     private void connect(String deviceAddress) {
-        boolean isConnecting = mBleManager.connect(this, deviceAddress);
+        //boolean isConnecting = mBleManager.connect(this, deviceAddress);
+        mBleManager.connect(this, deviceAddress);
     }
 }

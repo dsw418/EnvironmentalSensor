@@ -6,8 +6,17 @@
     <string name="menu_humidity">Humidity</string>
     <string name="menu_sunlight">Sunlight</string>
 
+    <!-- No Connection -->
+    <string name="no_bluetooth">No Bluetooth Connection</string>
+
+    <!-- Connected -->
+    <string name="connected">Connected</string>
+
     <!-- Location -->
     <string name="dialog_error_nolocationservices">This app requires that Location Services are enabled to determine your location.\nPlease go to settings and enable it</string>
+
+    <!-- Accuracy -->
+    <string name="accuracy">Accuracy: </string>
 
     <!-- Scan Activity -->
     <string name="scan_scanbutton_scan">Scan for peripherals</string>

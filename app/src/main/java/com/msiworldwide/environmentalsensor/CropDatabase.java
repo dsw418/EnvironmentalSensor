@@ -28,7 +28,9 @@ public class CropDatabase extends AppCompatActivity {
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Crop");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Crop");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
 
         List<Crops> list_data = getListData();

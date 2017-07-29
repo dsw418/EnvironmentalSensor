@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     // Activity request codes (used for onActivityResult)
     private static final int kActivityRequestCode_EnableBluetooth = 1;
-    private static final int kActivityRequestCode_Settings = 2;
+    //private static final int kActivityRequestCode_Settings = 2;
     private static final int kActivityRequestCode_ConnectedActivity = 3;
     private static final int NewFieldRequestCode = 4;
     private static final int NewWaterSourceRequestCode = 5;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private boolean mIsScanPaused = true;
     private BleDevicesScanner mScanner;
     private BluetoothDevice device;
-    private String deviceAddress;
+    //private String deviceAddress;
     private BluetoothAdapter adapter;
 
     private ArrayList<BluetoothDeviceData> mScannedDevices;
@@ -108,7 +108,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Home");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Home");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
 
         // Init variables
@@ -317,7 +319,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                         mSelectedDeviceData = mScannedDevices.get(index);
                         if (!connected || !devName.equals(mSelectedDeviceData.getNiceName())) {
                             device = mSelectedDeviceData.device;
-                            deviceAddress = device.getAddress();
+                            //deviceAddress = device.getAddress();
                             mBleManager.setBleListener(MainActivity.this);
                             devName = mSelectedDeviceData.getNiceName();
                             connect(device);
@@ -345,9 +347,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mBleManager.disconnect();
         if (connected) {
             connected = false;
-            connectionStatus.setText("No Bluetooth Connection");
+            connectionStatus.setText(R.string.no_bluetooth);
         }
-        adapter.startDiscovery();
+        if (adapter != null) {
+            adapter.startDiscovery();
+        }
     }
 
     @Override
@@ -391,7 +395,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void connect(BluetoothDevice device) {
-        boolean isConnecting = mBleManager.connect(this, device.getAddress());
+        //boolean isConnecting = mBleManager.connect(this, device.getAddress());
+        mBleManager.connect(this, device.getAddress());
     }
 
     @Override
@@ -430,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void checkLocationServiceAvailability() {
 
-        boolean areLocationServiceReady = true;
+        boolean areLocationServiceReady;
             int locationMode = Settings.Secure.LOCATION_MODE_OFF;
             try {
                 locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
@@ -517,15 +522,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if (resultCode == Activity.RESULT_OK) {
                 // Bluetooth was enabled, resume scanning
                 resumeScanning();
-            } else if (resultCode == Activity.RESULT_CANCELED) {
+            } //else if (resultCode == Activity.RESULT_CANCELED) {
  /*               AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 AlertDialog dialog = builder.setMessage(R.string.dialog_error_no_bluetooth)
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
                 DialogUtils.keepDialogOnOrientationChanges(dialog);*/
 
-            }
-        } else if (requestCode == kActivityRequestCode_Settings) {
+            //}
         } else if (requestCode == NewFieldRequestCode) {
             if(resultCode == Activity.RESULT_OK) {
                 String result = data.getStringExtra("result");
@@ -704,14 +708,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             offset += 2 * 2;   // major, minor
 
             // Read txpower
-            final int txPower = advertisedData[offset++];
-            deviceData.txPower = txPower;
+            deviceData.txPower = advertisedData[offset+ 1];
         } else if (isUriBeacon) {
             deviceData.type = BluetoothDeviceData.kType_UriBeacon;
 
             // Read txpower
-            final int txPower = advertisedData[9];
-            deviceData.txPower = txPower;
+            deviceData.txPower = advertisedData[9];
         } else {
             // Read standard advertising packet
             while (offset < advertisedData.length - 2) {
@@ -774,8 +776,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     }
 
                     case 0x0A: {        // TX Power
-                        final int txPower = advertisedData[offset++];
-                        deviceData.txPower = txPower;
+                        deviceData.txPower = advertisedData[offset++];
                         break;
                     }
 
@@ -922,23 +923,24 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 if (!connected) {
                     if (newdevice != null && device != null) {
                         // Check if the found device is one we had comm with
-                        if (newdevice.getAddress().equals(device.getAddress()) == true)
+                        if (newdevice.getAddress().equals(device.getAddress()))
                             connect(device);
                     }
                 }
             } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //Device is now connected
-                connectionStatus.setText("Connected");
+                connectionStatus.setText(R.string.connected);
                 devices_spinner.setSelection(devadapter.getPosition(devName), false);
                 connected = true;
                 adapter.cancelDiscovery();
-            } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+            } /*else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 //Done searching
-            } else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
+            }else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
                 //Device is about to disconnect
-            } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+            }*/
+            else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 //Device has disconnected
-                connectionStatus.setText("No Bluetooth Connection");
+                connectionStatus.setText(R.string.no_bluetooth);
                 devices_spinner.setSelection(0, false);
                 connected = false;
                 adapter.startDiscovery();

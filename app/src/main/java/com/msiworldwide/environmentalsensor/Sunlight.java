@@ -18,7 +18,9 @@ public class Sunlight extends AppCompatActivity {
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Sunlight");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Sunlight");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
     }
 

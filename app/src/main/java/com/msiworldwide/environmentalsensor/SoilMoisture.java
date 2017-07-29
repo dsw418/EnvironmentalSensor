@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,7 +21,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polygon;
+//import com.google.android.gms.maps.model.Polygon;
 import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
@@ -36,7 +35,7 @@ import com.msiworldwide.environmentalsensor.Data.MeasurementIdentifiers;
 import com.msiworldwide.environmentalsensor.Data.SensorData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -64,8 +63,7 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
     double minmoisture;
     TileOverlay mOverlay = null;
 
-    private Spinner date_spinner;
-    private ArrayList<String> dateString = new ArrayList<>(Arrays.asList("Select Date"));
+    private ArrayList<String> dateString = new ArrayList<>(Collections.singletonList("Select Date"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,7 +72,9 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Soil Moisture");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Soil Moisture");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
 
         db = new DatabaseHelper(getApplicationContext());
@@ -91,7 +91,7 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
         measurementIdentifiers = db.getMeasurementIdbyField(fieldData.getFieldId());
 
         // Spinner Drop Down for Field Selection
-        date_spinner = (Spinner)findViewById(R.id.Date_Select_Soil);
+        Spinner date_spinner = (Spinner)findViewById(R.id.Date_Select_Soil);
 
         for (int i = 0; i < measurementIdentifiers.size(); i++) {
             MeasurementIdentifiers m_id = measurementIdentifiers.get(i);
@@ -181,7 +181,8 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             for (LatLng location : boundary) {
                 opts.add(location);
             }
-            Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED));
+            //Polygon polygon = mMap.addPolygon(opts.strokeColor(Color.RED));
+            mMap.addPolygon(opts.strokeColor(Color.RED));
             Collections.sort(lats);
             Collections.sort(lngs);
             mNortheast = new LatLng(lats.get(lats.size() - 1), lngs.get(lngs.size() - 1));

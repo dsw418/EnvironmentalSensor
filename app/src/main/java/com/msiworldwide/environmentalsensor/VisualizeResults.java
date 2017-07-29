@@ -16,7 +16,9 @@ public class VisualizeResults extends AppCompatActivity {
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Visualize Results");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Visualize Results");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
     }
 

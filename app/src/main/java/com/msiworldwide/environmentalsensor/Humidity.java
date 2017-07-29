@@ -18,7 +18,9 @@ public class Humidity extends AppCompatActivity {
 
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        getSupportActionBar().setTitle("Humidity");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Humidity");
+        }
         mToolbar.setTitleTextColor(Color.WHITE);
     }
 
