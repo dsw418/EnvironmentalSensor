@@ -43,11 +43,7 @@ import com.msiworldwide.environmentalsensor.ble.BleUtils;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener,
@@ -142,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // Check if bluetooth adapter is available
             final boolean wasBluetoothEnabled = manageBluetoothAvailability();
             final boolean areLocationServicesReadyForScanning = manageLocationServiceAvailabilityForScanning();
+            checkLocationServiceAvailability();
 
             // Reset bluetooth
             if (autoResetBluetoothOnStart && wasBluetoothEnabled && areLocationServicesReadyForScanning) {
@@ -284,7 +281,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     Intent intent = new Intent(this, CropDatabase.class);
                     startActivityForResult(intent, CropSelectRequestCode);
                 } else if(position > 1) {
-
+                    String CropId = cropString.get(position);
+                    currentSelections.setCrop_id(CropId);
                 }
                 break;
             case R.id.Device_Select:
@@ -430,6 +428,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return isEnabled;
     }
 
+    private void checkLocationServiceAvailability() {
+
+        boolean areLocationServiceReady = true;
+            int locationMode = Settings.Secure.LOCATION_MODE_OFF;
+            try {
+                locationMode = Settings.Secure.getInt(getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+            }
+            areLocationServiceReady = locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+           if (!areLocationServiceReady) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                AlertDialog dialog = builder.setMessage(R.string.dialog_error_nolocationservices)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
+                DialogUtils.keepDialogOnOrientationChanges(dialog);
+            }
+    }
+
     private boolean manageLocationServiceAvailabilityForScanning() {
 
         boolean areLocationServiceReady = true;
@@ -444,14 +464,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
             areLocationServiceReady = locationMode != Settings.Secure.LOCATION_MODE_OFF;
 
-            if (!areLocationServiceReady) {
+/*            if (!areLocationServiceReady) {
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
                 AlertDialog dialog = builder.setMessage(R.string.dialog_error_nolocationservices_requiredforscan_marshmallow)
                         .setPositiveButton(android.R.string.ok, null)
                         .show();
                 DialogUtils.keepDialogOnOrientationChanges(dialog);
-            }
+            }*/
         }
 
         return areLocationServiceReady;
