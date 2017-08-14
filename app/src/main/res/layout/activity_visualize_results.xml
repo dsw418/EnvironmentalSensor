@@ -141,8 +141,8 @@
 
                         <ImageView
                             android:id="@+id/imageView11"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
                             app:srcCompat="@drawable/temperature"
                             android:layout_marginTop="5dp"/>
 
@@ -182,8 +182,8 @@
 
                         <ImageView
                             android:id="@+id/imageView12"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
                             app:srcCompat="@drawable/humidity"
                             android:layout_marginTop="5dp"/>
 
@@ -233,8 +233,8 @@
 
                         <ImageView
                             android:id="@+id/imageView13"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
                             app:srcCompat="@drawable/sunset"
                             android:layout_marginTop="5dp"/>
 
