@@ -50,10 +50,10 @@
 
                         <ImageView
                             android:id="@+id/imageView6"
-                            android:layout_width="70dp"
-                            android:layout_height="70dp"
-                            app:srcCompat="@drawable/soilmoisture"
-                            android:layout_marginTop="5dp"/>
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
+                            android:layout_marginTop="5dp"
+                            app:srcCompat="@drawable/soilmoisture" />
 
                         <TextView
                             android:id="@+id/textView7"
@@ -86,14 +86,15 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal|center_vertical">
 
                         <ImageView
                             android:id="@+id/imageView7"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_width="60dp"
+                            android:layout_height="60dp"
                             app:srcCompat="@drawable/soilnutrition"
-                            android:layout_marginTop="15dp"/>
+                            android:layout_marginTop="5dp"/>
 
                         <TextView
                             android:id="@+id/textView6"
@@ -101,7 +102,7 @@
                             android:layout_height="wrap_content"
                             android:text="Soil Nutrition"
                             android:gravity="center_horizontal"
-                            android:layout_marginTop="15dp"
+                            android:layout_marginTop="10dp"
                             android:textStyle="bold"
                             android:textSize="18dp"/>
                     </LinearLayout>
@@ -143,8 +144,8 @@
                             android:id="@+id/imageView11"
                             android:layout_width="60dp"
                             android:layout_height="60dp"
-                            app:srcCompat="@drawable/temperature"
-                            android:layout_marginTop="5dp"/>
+                            android:layout_marginTop="5dp"
+                            app:srcCompat="@drawable/temperature" />
 
                         <TextView
                             android:id="@+id/textView11"
