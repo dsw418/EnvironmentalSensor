@@ -33,6 +33,7 @@ public class CropDatabase extends AppCompatActivity {
         }
         mToolbar.setTitleTextColor(Color.WHITE);
 
+
         List<Crops> list_data = getListData();
         final ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(new CustomListAdapter(this, list_data));
