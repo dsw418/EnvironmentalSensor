@@ -18,8 +18,16 @@
     <!-- Accuracy -->
     <string name="accuracy">Accuracy: </string>
 
-    <!-- Scan Activity -->
-    <string name="scan_scanbutton_scan">Scan for peripherals</string>
+    <!-- Map Menu Items -->
+    <string name="MAP_TYPE_NONE">None</string>
+    <string name="MAP_TYPE_NORMAL">Normal</string>
+    <string name="MAP_TYPE_HYBRID">Hybrid</string>
+    <string name="MAP_TYPE_TERRAIN">Terrain</string>
+    <string name="MAP_TYPE_SATELLITE">Satellite</string>
+
+
+
+
     <string name="scan_scanbutton_scanning">Scanning…</string>
     <string name="scan_devicesheadertitle">PERIPHERALS</string>
     <string name="scan_nodevicesfound">No peripherals found</string>

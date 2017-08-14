@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -104,6 +105,7 @@ public class NewFieldBoundary extends AppCompatActivity implements LocationListe
                 double lat = mCurrentLocation.getLatitude();
                 double lng = mCurrentLocation.getLongitude();
                 String coords = String.valueOf(lat) + "," + String.valueOf(lng);
+                Log.i("Data", coords+"\n");
                 boundary.add(coords);
                 loc.setText("Accuracy: " + String.valueOf(mCurrentLocation.getAccuracy()));
                 start();

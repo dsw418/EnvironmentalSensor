@@ -33,7 +33,6 @@ public class CropDatabase extends AppCompatActivity {
         }
         mToolbar.setTitleTextColor(Color.WHITE);
 
-
         List<Crops> list_data = getListData();
         final ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(new CustomListAdapter(this, list_data));
@@ -56,11 +55,13 @@ public class CropDatabase extends AppCompatActivity {
         Crops cotton = new Crops("Cotton", "cotton_plant", "Type of Cotton");
         Crops rice = new Crops("Rice", "rice_plant", "Type of Rice");
         Crops wheat = new Crops("Wheat", "wheat", "Type of Wheat");
+        Crops None = new Crops("None", "none", "No crops");
 
         list.add(corn);
         list.add(cotton);
         list.add(rice);
         list.add(wheat);
+        list.add(None);
 
         return list;
     }

@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -28,6 +30,12 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.Gradient;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.google.maps.android.heatmaps.WeightedLatLng;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.DataPointInterface;
+import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.OnDataPointTapListener;
+import com.jjoe64.graphview.series.Series;
 import com.msiworldwide.environmentalsensor.Data.CurrentSelections;
 import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
 import com.msiworldwide.environmentalsensor.Data.FieldData;
@@ -42,12 +50,15 @@ import java.util.List;
 public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallback,
         AdapterView.OnItemSelectedListener{
 
+    public static final String TAG = SoilMoisture.class.getSimpleName();
+
     private GoogleMap mMap;
 
     DatabaseHelper db;
     CurrentSelections currentSelections = new CurrentSelections();
     long Field_id;
-    FieldData fieldData = new FieldData();
+    //FieldData fieldData = new FieldData();
+    List<FieldData> fieldData;
     List<MeasurementIdentifiers> measurementIdentifiers;
     List<SensorData> DataList;
     String field_coords_str;
@@ -65,6 +76,10 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
 
     private ArrayList<String> dateString = new ArrayList<>(Collections.singletonList("Select Date"));
 
+
+    ///////////////////////////////////
+    LineGraphSeries<DataPoint> series;
+    ///////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,18 +100,22 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             mapFragment.getMapAsync(this);
         }
 
-        currentSelections = db.getCurrentSelections();
-        Field_id = currentSelections.getField_id();
-        fieldData = db.getFieldData(Field_id);
-        measurementIdentifiers = db.getMeasurementIdbyField(fieldData.getFieldId());
+        //currentSelections = db.getCurrentSelections();
+        //Field_id = currentSelections.getField_id();
+        //fieldData = db.getFieldData(Field_id);
+        fieldData = db.getAllFieldData();
+
+       // measurementIdentifiers = db.getMeasurementIdbyField(fieldData.getFieldId());
+        measurementIdentifiers = db.getAllMeasurementId();
 
         // Spinner Drop Down for Field Selection
         Spinner date_spinner = (Spinner)findViewById(R.id.Date_Select_Soil);
 
         for (int i = 0; i < measurementIdentifiers.size(); i++) {
             MeasurementIdentifiers m_id = measurementIdentifiers.get(i);
-            dateString.add(m_id.getDate());
+            dateString.add(m_id.getFieldId()+" - "+m_id.getDate());
         }
+
         ArrayAdapter<String> dateAdapter = new ArrayAdapter<>(SoilMoisture.this,
                 android.R.layout.simple_spinner_item,dateString);
 
@@ -104,7 +123,7 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
         date_spinner.setAdapter(dateAdapter);
         date_spinner.setOnItemSelectedListener(this);
 
-        field_coords_str = fieldData.getCoordinates();
+        field_coords_str = fieldData.get(0).getCoordinates();
         field_coords_array = field_coords_str.split(",");
         for (int i=0;i<field_coords_array.length/2;i++) {
             double lat = Double.valueOf(field_coords_array[2*i]);
@@ -114,41 +133,64 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             LatLng point = new LatLng(lat,lng);
             boundary.add(point);
         }
+
+       ///////////////// GraphView /////////////////////////////
+/*        GraphView graph = (GraphView) findViewById(R.id.graph);
+        series = new LineGraphSeries<>(new DataPoint[] {
+                new DataPoint(0, 1),
+                new DataPoint(1, 5),
+                new DataPoint(2, 3),
+                new DataPoint(3, 2),
+                new DataPoint(4, 6),
+                new DataPoint(5, 7),
+                new DataPoint(6, 8),
+                new DataPoint(7, 5)
+        });
+
+        series.setDrawDataPoints(true);
+        series.setDataPointsRadius(8);
+       // series.setThickness(8);
+
+        series.setOnDataPointTapListener(new OnDataPointTapListener() {
+            @Override
+            public void onTap(Series series, DataPointInterface dataPoint) {
+                Toast.makeText(SoilMoisture.this, "Soil Moisture : "+dataPoint, Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        graph.setTitle("Soil Moisture Chart");
+        graph.setTitleColor(Color.BLUE);
+
+        //graph.getViewport().setScalable(true);
+        graph.addSeries(series);*/
+
+       //////////////// End GraphView /////////////////////////// /
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.result_menu,menu);
+        inflater.inflate(R.menu.map_menu,menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.moisture_id:
-                //Intent mIntent = new Intent(this, SoilMoisture.class);
-                //startActivity(mIntent);
+            case R.id.MAP_TYPE_NONE:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NONE);
                 break;
-            case R.id.nutrition_id:
-                Intent nIntent = new Intent(this, SoilNutrition.class);
-                startActivity(nIntent);
-                this.finish();
+            case R.id.MAP_TYPE_NORMAL:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 break;
-            case R.id.temperature_id:
-                Intent tIntent = new Intent(this, Temperature.class);
-                startActivity(tIntent);
-                this.finish();
+            case R.id.MAP_TYPE_HYBRID:
+                mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 break;
-            case R.id.humidity_id:
-                Intent hIntent = new Intent(this, Humidity.class);
-                startActivity(hIntent);
-                this.finish();
+            case R.id.MAP_TYPE_TERRAIN:
+                mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 break;
-            case R.id.sunlight_id:
-                Intent sIntent = new Intent(this, Sunlight.class);
-                startActivity(sIntent);
-                this.finish();
+            case R.id.MAP_TYPE_SATELLITE:
+                mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -188,7 +230,14 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             mNortheast = new LatLng(lats.get(lats.size() - 1), lngs.get(lngs.size() - 1));
             mSouthwest = new LatLng(lats.get(0), lngs.get(0));
             LatLngBounds field_bound = new LatLngBounds(mSouthwest,mNortheast);
-            mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(field_bound,0));
+
+            int width = getResources().getDisplayMetrics().widthPixels;
+            int height = getResources().getDisplayMetrics().heightPixels;
+            int padding = (int) (width * 0.12); // offset from edges of the map 12% of screen
+
+            LatLng latLng = new LatLng(lats.get(lats.size() - 1),  lngs.get(lngs.size() - 1));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 7.0f));
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngBounds(field_bound, width, height, padding));
         }
 
     }
@@ -198,13 +247,18 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             mOverlay.remove();
         }
 
+
         //ArrayList<LatLng> points = new ArrayList<>();
         ArrayList<WeightedLatLng> data = new ArrayList<>();
         for(int i = 0; i<DataList.size();i++) {
             SensorData sensorData = DataList.get(i);
             double lat = sensorData.getLat();
             double lng = sensorData.getLng();
+            LatLng latLng = new LatLng(lat,lng);
+           // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18.20f));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18.20f));
             int moisture = sensorData.getmoisture();
+
             data.add(new WeightedLatLng(new LatLng(lat,lng),(double)moisture));
             moisturelist.add((double)moisture);
             //points.add(new LatLng(lat,lng));
@@ -212,9 +266,17 @@ public class SoilMoisture extends AppCompatActivity implements OnMapReadyCallbac
             int sunlight = sensorData.getsunlight();
             double temp = sensorData.gettemperature();
             double hum = sensorData.gethumidity();
+            Log.i(TAG, "Date : "+sensorData.getDate()+" - "+sensorData.getTime());
             mMap.addMarker(new MarkerOptions().position(loc).icon(BitmapDescriptorFactory.fromResource(R.mipmap.circle_marker))
                     .title("M:" + String.valueOf(moisture) + ", S:" + String.valueOf(sunlight) + ", T:" + String.valueOf(temp) + ", H:" + String.valueOf(hum)));
+
+            //series.appendData(new DataPoint(moisture, i), true, 30);
         }
+
+        //DataPoint dataPoint = new DataPoint(0, 1);
+
+
+
         //data.add(new WeightedLatLng(new LatLng(-90,0),100));
         //data.add(new WeightedLatLng(new LatLng(-90,0),0));
 

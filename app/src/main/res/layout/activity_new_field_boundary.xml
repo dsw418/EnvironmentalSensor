@@ -1,106 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.msiworldwide.environmentalsensor.MainActivity">
+    tools:context="com.msiworldwide.environmentalsensor.MainActivity"
+    android:weightSum="1">
 
     <android.support.v7.widget.Toolbar
-        android:layout_width="match_parent"
+        android:layout_width="395dp"
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
         android:theme="?attr/actionBarTheme"
-        android:id="@+id/toolbar" />
+        android:id="@+id/toolbar"
+        tools:layout_editor_absoluteY="0dp"
+        tools:layout_editor_absoluteX="8dp" />
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="67dp"
         android:gravity="center"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="8dp"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.0">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_weight="1"/>
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp">
 
-        <EditText
-            android:id="@+id/FieldName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Field Name"
-            android:inputType="textPersonName" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_weight="1"/>
+                <EditText
+                    android:id="@+id/FieldName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginTop="20dp"
+                    android:ems="10"
+                    android:hint="Field Name"
+                    android:inputType="textPersonName"
+                    android:textAlignment="center" />
 
+                <TextView
+                    android:id="@+id/location"
+                    android:layout_width="match_parent"
+                    android:layout_height="31dp"
+                    android:layout_margin="10dp"
+                    android:gravity="center"
+                    android:text="TextView" />
+            </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/startbutton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:background="@null"
-            android:onClick="start_loc"
-            android:src="@mipmap/green_start"
-            android:layout_weight="8.07" />
+        </android.support.v7.widget.CardView>
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_weight="1"/>
-
-        <ImageButton
-            android:id="@+id/Finishbutton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="@null"
-            android:onClick="stop_loc"
-            android:src="@mipmap/redstop" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_weight="1"/>
-
-
-        <TextView
-            android:id="@+id/location"
-            android:layout_width="274dp"
-            android:layout_height="31dp"
-            android:text="TextView"
-            android:gravity="center"/>
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="20dp"
-            android:layout_weight="1"/>
 
     </LinearLayout>
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="end|bottom"
-        android:orientation="vertical">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="16dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:id="@+id/linearLayout2">
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="30dp"
+            android:drawableLeft="@drawable/img_btn_walk"
+            android:drawablePadding="10dp"
+            android:gravity="left|center"
+            android:onClick="start_loc"
+            android:text="Start Walk Around Field"
+            android:textColor="#fff"
+            android:textSize="16sp"
+            android:theme="@style/myBtnColor" />
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/img_btn_stop"
+            android:drawablePadding="10dp"
+            android:gravity="left|center"
+            android:onClick="stop_loc"
+            android:text="Stop Walking"
+            android:textColor="#fff"
+            android:textSize="16sp"
+            android:theme="@style/myBtnColor" />
 
         <Button
             android:id="@+id/save_field"
-            android:layout_width="136dp"
-            android:layout_height="59dp"
-            android:layout_marginBottom="16dp"
-            android:layout_marginEnd="16dp"
-            android:background="#C5E0B4"
-            android:gravity="start|center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="100dp"
+            android:drawableLeft="@drawable/img_btn_save"
+            android:drawablePadding="10dp"
+            android:gravity="left|center"
             android:onClick="save"
-            android:text="    Save"
-            android:textSize="18sp" />
+            android:text="Save"
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:theme="@style/myBtnSaveColor" />
 
     </LinearLayout>
 
-</LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

@@ -18,7 +18,9 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +30,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,9 +43,18 @@ import com.msiworldwide.environmentalsensor.ble.BleManager;
 import com.msiworldwide.environmentalsensor.ble.BleDevicesScanner;
 import com.msiworldwide.environmentalsensor.ble.BleUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.nio.channels.FileChannel;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -91,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private String devName;
 
 
+//////////////////////////////////////////////////////////////////
+    Button btnViz;
+
+///////////////////////////////////////////////////////////////////////////////
     DatabaseHelper db;
 
     List<FieldData> Fields;
@@ -106,11 +122,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button btnViz = (Button) findViewById(R.id.btnViz);
+        btnViz.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent innt = new Intent(MainActivity.this, Measurement.class);
+                startActivity(innt);
+            }
+        });
+
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Home");
+            getSupportActionBar().setTitle("Main");
         }
+
         mToolbar.setTitleTextColor(Color.WHITE);
 
         // Init variables
@@ -495,12 +521,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
                     public void onDismiss(DialogInterface dialog) {
                         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
+
                     }
                 });
                 builder.show();
             }
         }
     }
+
+
 
     // region ResetBluetoothAdapterListener
     @Override
@@ -962,4 +991,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     };
 
+
+
+
+
 }
+

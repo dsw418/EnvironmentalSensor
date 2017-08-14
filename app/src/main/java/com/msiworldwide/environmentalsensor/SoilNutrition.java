@@ -47,36 +47,27 @@ public class SoilNutrition extends AppCompatActivity implements OnMapReadyCallba
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.result_menu,menu);
+        inflater.inflate(R.menu.map_menu,menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.moisture_id:
-                Intent mIntent = new Intent(this, SoilMoisture.class);
-                startActivity(mIntent);
-                this.finish();
+            case R.id.MAP_TYPE_NONE:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NONE);
                 break;
-            case R.id.nutrition_id:
-                //Intent nIntent = new Intent(this, SoilNutrition.class);
-                //startActivity(nIntent);
+            case R.id.MAP_TYPE_NORMAL:
+                mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
                 break;
-            case R.id.temperature_id:
-                Intent tIntent = new Intent(this, Temperature.class);
-                startActivity(tIntent);
-                this.finish();
+            case R.id.MAP_TYPE_HYBRID:
+                 mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
                 break;
-            case R.id.humidity_id:
-                Intent hIntent = new Intent(this, Humidity.class);
-                startActivity(hIntent);
-                this.finish();
+            case R.id.MAP_TYPE_TERRAIN:
+                mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
                 break;
-            case R.id.sunlight_id:
-                Intent sIntent = new Intent(this, Sunlight.class);
-                startActivity(sIntent);
-                this.finish();
+            case R.id.MAP_TYPE_SATELLITE:
+                mMap.setMapType(GoogleMap.MAP_TYPE_SATELLITE);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -87,9 +78,9 @@ public class SoilNutrition extends AppCompatActivity implements OnMapReadyCallba
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
         // Add a marker in Blacksburg and move the camera
-        LatLng blacksburg = new LatLng(37.229572,  -80.413940);
-        mMap.addMarker(new MarkerOptions().position(blacksburg).title("Marker in Blacksburg"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(blacksburg));
+        LatLng kbl = new LatLng(34.572047, 69.225847);
+        mMap.addMarker(new MarkerOptions().position(kbl).title("Kabul Afghanistan").snippet("Qk Ahmadzai"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(kbl));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(10));
     }
 }

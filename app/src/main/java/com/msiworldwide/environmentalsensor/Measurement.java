@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 //import android.widget.TextView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -139,6 +140,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         mToolbar.setTitleTextColor(Color.WHITE);
 
         db = new DatabaseHelper(getApplicationContext());
+        vizSensorIncomingData();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         MapFragment mapFragment = (MapFragment) getFragmentManager() .findFragmentById(R.id.map);
@@ -189,6 +191,10 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                     MeasuredData.setDate(date);
                     String text = "M";
                     sendData(text);
+
+                    Log.v("test", lat +","+lng);
+                   /* DatabaseHelper db = new DatabaseHelper(getApplicationContext());
+                    db.getSensorData(1);*/
                 }
             }
         });
@@ -236,6 +242,8 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         }
 
     }
+
+
 
     public void openVisualizeResults(View view){
         Intent intent = new Intent(this, VisualizeResults.class);
@@ -433,14 +441,19 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+       // mMap.setMaxZoomPreference(18.0f);
+       // mMap.moveCamera(CameraUpdateFactory.zoomTo(18.0f));
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
     }
 
     // region Send Data to UART
     protected void sendData(String text) {
+       // Log.i(TAG, ".... Text .... : "+ text);
         final byte[] value = text.getBytes(Charset.forName("UTF-8"));
+        Log.i(TAG, ".... Value .... : "+ value);
         sendData(value);
     }
+
 
     protected void sendData(byte[] data) {
         if (mUartService != null) {
@@ -453,6 +466,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                 //received_data.setText("Measuring...");
                 Toast measuring = Toast.makeText(getApplicationContext(), "Measuring...", Toast.LENGTH_LONG);
                 measuring.show();
+
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
@@ -627,7 +641,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                 lostcon.show();
                 adapter.startDiscovery();
 
-                //connect(device);
+                //connect(device);`
             }
         }
     };
@@ -636,4 +650,94 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
         //boolean isConnecting = mBleManager.connect(this, deviceAddress);
         mBleManager.connect(this, deviceAddress);
     }
+
+
+    private Handler handler = new Handler();
+    TextView tvLtLng, tvTime, tvSoilMoisture, tvHumidity, tvSunLight, tvTemp;
+
+/*protected void vizSensorIncomingData(String text) {
+    Log.i(TAG, ".... Text .... : "+ text);
+    final byte[] value = text.getBytes(Charset.forName("UTF-8"));
+    Log.i(TAG, ".... Value .... : "+ value);
+    vizSensorIncomingData(value);
+}*/
+
+protected String vizSensorIncomingData(String text) {
+    String data1="";
+    //String text = "M";
+    final byte[] data = text.getBytes(Charset.forName("UTF-8"));
+
+    if (mUartService != null) {
+        // Split the value into chunks (UART service has a maximum number of characters that can be written )
+        for (int i = 0; i < data.length; i += kTxMaxCharacters) {
+            final byte[] chunk = Arrays.copyOfRange(data, i, Math.min(i + kTxMaxCharacters, data.length));
+            mBleManager.writeService(mUartService, UUID_TX, chunk);
+        }
+
+        BluetoothGattCharacteristic characteristic = mUartService.getCharacteristic(UUID.fromString(UUID_RX));
+        byte[] dataread = characteristic.getValue();
+
+        if (dataread != null) {
+            data1 = new String(dataread, Charset.forName("UTF-8"));
+            String[] values = data1.split(",");
+            try {
+                int moisture = Integer.parseInt(values[0]);
+                int sunlight = Integer.parseInt(values[1]);
+                double temp = Double.parseDouble(values[2]);
+                double humid = Double.parseDouble(values[3]);
+
+                Log.i(TAG, "moisture : " + moisture + " sunlight : " + sunlight + " temp : " + temp + " humid : " + humid);
+
+                double lat = mCurrentLocation.getLatitude();
+                double lng = mCurrentLocation.getLongitude();
+                String time = DateFormat.getTimeInstance().format(new Date());
+                String date = DateFormat.getDateInstance().format(new Date());
+
+                tvLtLng.setText(lat +", "+lng);
+                tvTime.setText(time +" "+date);
+                tvSoilMoisture.setText(moisture+"");
+                tvHumidity.setText(humid+"");
+                tvSunLight.setText(sunlight+"");
+                tvTemp.setText(temp+"");
+
+                Log.i(TAG, "Lat : " + lat + " Lng : " + lng + " Time : " + time + " Date : " + date);
+
+
+            } catch (Exception e) {
+
+                Log.i(TAG, "Error vizSensorIncomingData : " + e);
+
+            }
+
+
+        }
+
+    }
+    return  data1;
+}
+
+public void vizSensorIncomingData(){
+
+            tvLtLng = (TextView) findViewById(R.id.tvLatLng);
+            tvTime = (TextView) findViewById(R.id.tvTime);
+            tvSoilMoisture = (TextView) findViewById(R.id.tvSoilMoisture);
+            tvHumidity = (TextView) findViewById(R.id.tvHumidity);
+            tvSunLight = (TextView) findViewById(R.id.tvSunlight);
+            tvTemp = (TextView) findViewById(R.id.tvTemp);
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+
+                    //Log.i(TAG, "handler...");
+                    String st = vizSensorIncomingData("M");
+                    Log.i(TAG, "St : "+ st);
+
+                    vizSensorIncomingData();
+                }
+            }, 500);
+}
+
+
+
 }
