@@ -391,6 +391,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return fd;
     }
 
+/*    // Getting a single FieldData Added By Qk Ahmadzai
+    public FieldData getFieldDataByFieldName(String FieldName) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT  * FROM " + TABLE_FIELD + " WHERE "+KEY_FieldId+" = "
+                + FieldName;
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+
+        if (c != null)
+            c.moveToFirst();
+
+        FieldData fd = new FieldData();
+        fd.setFieldId(c.getString(c.getColumnIndex(KEY_FieldId)));
+        fd.setCoordinates(c.getString(c.getColumnIndex(KEY_Coordinates)));
+
+       Log.i("Data : ", " "+ c.getString(c.getColumnIndex(KEY_FieldId)));
+
+        return fd;
+    }*/
+
     // Updating FieldData
     public long updateFieldData(FieldData fieldData) {
         SQLiteDatabase db = this.getWritableDatabase();
