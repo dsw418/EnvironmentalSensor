@@ -6,8 +6,9 @@
         android:largeScreens="true"
         android:normalScreens="true"
         android:smallScreens="true"
-        android:xlargeScreens="true"/>
+        android:xlargeScreens="true" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -19,20 +20,21 @@
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="true" />
-
-    <uses-feature android:name="android.hardware.camera"
+    <uses-feature
+        android:name="android.hardware.camera"
         android:required="false" />
-    <uses-feature android:name="android.hardware.gps"
+    <uses-feature
+        android:name="android.hardware.gps"
         android:required="true" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/leaf"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/leaf"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".Home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -43,13 +45,18 @@
         <activity
             android:name=".Measurement"
             android:label="@string/title_activity_measurement" />
+
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
              Note that the API key is linked to the encryption key used to sign the APK.
              You need a different API key for each encryption key, including the release key that is used to
              sign the APK for publishing.
-             You can define the keys for the debug and release targets in src/debug/ and src/release/. 
+             You can define the keys for the debug and release targets in src/debug/ and src/release/.
+
+               <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
         -->
 
         <meta-data
@@ -63,11 +70,11 @@
         <activity android:name=".NewWaterSource" />
         <activity android:name=".CropDatabase" />
         <activity android:name=".VisualizeResults" />
-        <activity android:name=".SoilMoisture" />
         <activity android:name=".SoilNutrition" />
+        <activity android:name=".SoilMoisture" />
         <activity android:name=".Temperature" />
         <activity android:name=".Humidity" />
-        <activity android:name=".Sunlight"></activity>
+        <activity android:name=".Sunlight" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -76,9 +83,12 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/filepath"/>
+                android:resource="@xml/filepath" />
         </provider>
 
+        <activity android:name=".SendData" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".AzureServicesEs.SynDataToAzure"></activity>
     </application>
 
 </manifest>

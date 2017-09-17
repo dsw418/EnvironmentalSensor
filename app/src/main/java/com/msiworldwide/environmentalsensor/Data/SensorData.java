@@ -13,6 +13,7 @@ public class SensorData {
     int sunlight;
     double temperature;
     double humidity;
+    int status;
 
     public SensorData() {}
 
@@ -29,6 +30,17 @@ public class SensorData {
         this.temperature = temperature;
         this.humidity = humidity;
     }
+
+
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
 
     // setters
     public void setMeasurementNumberId(int measurement_number_id) {

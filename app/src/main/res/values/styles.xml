@@ -9,4 +9,24 @@
         <item name="android:textColorSecondary">@android:color/white</item>
     </style>
 
+    <style name="myBtnColor" parent="Theme.AppCompat.Light">
+        <item name="colorControlHighlight">#6087c6</item>
+        <item name="colorButtonNormal">#709ce2</item>
+    </style>
+
+    <style name="myBtnSaveColor" parent="Theme.AppCompat.Light">
+        <item name="colorControlHighlight">#59a34a</item>
+        <item name="colorButtonNormal">#4b9f4b</item>
+    </style>
+
+    <style name="myBtnSyncColor" parent="Theme.AppCompat.Light">
+        <item name="colorControlHighlight">#ecc65e</item>
+        <item name="colorButtonNormal">#d7be42</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+
 </resources>

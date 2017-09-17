@@ -17,39 +17,33 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center">
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="10dp"
-            android:layout_weight="1"/>
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
 
         <Spinner
             android:id="@+id/Field_Select"
             android:layout_width="150dp"
             android:layout_height="54dp"
+            android:layout_weight="1"
+            android:layout_marginTop="2dp"
             android:background="@android:drawable/btn_dropdown"
             android:gravity="center_vertical"
             android:spinnerMode="dropdown" />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="10dp"
-            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="horizontal">
 
         <fragment
             android:id="@+id/nutrition_map"
             android:name="com.google.android.gms.maps.MapFragment"
             android:layout_width="match_parent"
-            android:layout_height="375dp"
-            android:layout_marginTop="8dp" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="10dp"
-            android:layout_weight="1"/>
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
     </LinearLayout>
 
 </LinearLayout>

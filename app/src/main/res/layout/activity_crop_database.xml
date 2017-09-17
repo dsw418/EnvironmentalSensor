@@ -28,21 +28,25 @@
         android:listSelector="@drawable/list_selector"/>
 
     <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
-        android:layout_gravity="right|end">
+        android:layout_margin="5dp">
 
         <Button
             android:id="@+id/save_crop"
-            android:layout_width="136dp"
-            android:layout_height="59dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="#C5E0B4"
-            android:gravity="start|center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginBottom="5dp"
+            android:drawableLeft="@drawable/img_btn_save"
+            android:drawablePadding="10dp"
+            android:gravity="left|center"
             android:onClick="saveCrop"
-            android:text="     Save"
-            android:textSize="18sp" />
+            android:text="Save"
+            android:textColor="#fff"
+            android:textSize="18sp"
+            android:theme="@style/myBtnSaveColor" />
+
+
     </LinearLayout>
 
 </LinearLayout>

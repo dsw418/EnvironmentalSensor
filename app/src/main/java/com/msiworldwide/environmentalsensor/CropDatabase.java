@@ -55,11 +55,13 @@ public class CropDatabase extends AppCompatActivity {
         Crops cotton = new Crops("Cotton", "cotton_plant", "Type of Cotton");
         Crops rice = new Crops("Rice", "rice_plant", "Type of Rice");
         Crops wheat = new Crops("Wheat", "wheat", "Type of Wheat");
+        Crops None = new Crops("None", "none", "No crops");
 
         list.add(corn);
         list.add(cotton);
         list.add(rice);
         list.add(wheat);
+        list.add(None);
 
         return list;
     }
