@@ -324,6 +324,7 @@ public class Measurement extends AppCompatActivity implements OnMapReadyCallback
                                 measurement_id = sensorDatas.get(sensorDatas.size() - 1).getMeasurement_number_id();
                                 measurementIdentifiers.setMeasurementNumberId(measurement_id);
                                 MeasuredData.setMeasurementNumberId(measurement_id);
+
                                 for (int i = 0; i < sensorDatas.size(); i++) {
                                     SensorData loadedData = sensorDatas.get(i);
                                     if (loadedData.getMeasurement_number_id() == measurement_id) {

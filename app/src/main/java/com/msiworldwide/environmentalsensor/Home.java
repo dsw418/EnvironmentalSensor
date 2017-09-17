@@ -2,27 +2,17 @@ package com.msiworldwide.environmentalsensor;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.msiworldwide.environmentalsensor.Data.DatabaseHelper;
+import com.msiworldwide.environmentalsensor.AzureServicesEs.SynDataToAzure;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class Home extends AppCompatActivity {
@@ -62,7 +52,7 @@ public class Home extends AppCompatActivity {
         btnExport.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent innt = new Intent(Home.this, SendData.class);
+                Intent innt = new Intent(Home.this, SynDataToAzure.class);
                 startActivity(innt);
             }
         });

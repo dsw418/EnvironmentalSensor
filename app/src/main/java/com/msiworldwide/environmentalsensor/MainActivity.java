@@ -227,6 +227,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         devices_spinner.setOnItemSelectedListener(this);
 
         connectionStatus = (TextView) findViewById(R.id.connection);
+        connectionStatus.setTextColor(Color.RED);
 
         adapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -374,6 +375,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         if (connected) {
             connected = false;
             connectionStatus.setText(R.string.no_bluetooth);
+            connectionStatus.setTextColor(Color.RED);
+
         }
         if (adapter != null) {
             adapter.startDiscovery();
@@ -959,6 +962,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             } else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 //Device is now connected
                 connectionStatus.setText(R.string.connected);
+                connectionStatus.setTextColor(Color.parseColor("#009900"));
+
                 devices_spinner.setSelection(devadapter.getPosition(devName), false);
                 connected = true;
                 adapter.cancelDiscovery();
@@ -970,6 +975,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 //Device has disconnected
                 connectionStatus.setText(R.string.no_bluetooth);
+                connectionStatus.setTextColor(Color.RED);
+
                 devices_spinner.setSelection(0, false);
                 connected = false;
                 adapter.startDiscovery();

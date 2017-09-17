@@ -8,6 +8,7 @@
         android:smallScreens="true"
         android:xlargeScreens="true" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -33,16 +34,17 @@
         android:roundIcon="@drawable/leaf"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity android:name=".Home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".MeasurementLocations" />
-        <activity android:name=".Measurement" android:label="@string/title_activity_measurement" />
+        <activity
+            android:name=".Measurement"
+            android:label="@string/title_activity_measurement" />
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
@@ -57,7 +59,9 @@
             android:value="@integer/google_play_services_version" />
         -->
 
-        <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
@@ -84,7 +88,7 @@
 
         <activity android:name=".SendData" />
         <activity android:name=".MainActivity" />
-
+        <activity android:name=".AzureServicesEs.SynDataToAzure"></activity>
     </application>
 
 </manifest>
